@@ -1,0 +1,44 @@
+#!/bin/bash
+
+[ -e "$(dirname $0)/functions.sh" ] && source $(dirname $0)/functions.sh || { echo "could not find functions.sh to source"; exit 5; }
+
+function usage {
+	echo "$0 [all]"
+	echo "check the syntax of any files that have status added/modified or check the syntax of all files"
+	echo "uses bin/syntax.plugins to do the actual syntax checking"
+	exit 2
+}
+
+if [ "$1" == "all" ]; then
+	files=$(find $__BASE__ -type f) || { echo "was unable to find files, find said: $files"; exit 1; }
+	echo "checking sytnax of all files"
+elif [ ! -z "$1" ]; then
+	files=$@
+else
+	files=$(getSvnEdits) || { echo "was unable to get current svn status: $files"; exit 1; }
+	echo "checking syntax of"
+	echo "$files"
+fi
+echo "------------"
+
+status=0
+
+for plugin in $__BASE__/bin/syntax.plugins/*.plugin; do
+	[ ! -x "$plugin" ] && continue
+	fileName=${plugin##*/}
+	pluginName=${fileName%.plugin}
+	echo -n "	${pluginName}... "
+	out=$($plugin $files)
+	ret=$?
+	if [ "$ret" -eq 121 ]; then
+		echo "N/A"
+	elif [ "$ret" -ne 0 ]; then
+		echo "Failed"
+		echo "$out" | perl -ple 's#^#\t\t#'
+		status=1
+	else
+		echo "OK"
+	fi
+done
+
+exit $status

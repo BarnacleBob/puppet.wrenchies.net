@@ -1,0 +1,74 @@
+#!/bin/bash
+
+[ -e "$(dirname $0)/functions.sh" ] && source $(dirname $0)/functions.sh || { echo "could not find functions.sh to source"; exit 5; }
+
+function usage {
+	echo "$0 [<env>] <type> <name>"
+	echo ""
+	echo "files are found by passing the args to hlp.  see hlp for usage"
+	echo ""
+	echo "Types"
+	echo "-------"
+	echo "class"
+	echo "define"
+	echo "role"
+	echo "file"
+	echo "defaults"
+	echo "nodes"
+	echo "role"
+	echo ""
+	usageEnvironments
+	exit 2
+}
+
+case $1 in
+	class|define|role|defaults|file|nodes|role) ;;
+	*) usage ;;
+esac
+
+if [ -z "$EDITOR" ]; then
+	if [ -z "$VISUAL" ]; then
+		USE_EDITOR="vi"
+	else
+		USE_EDITOR="$VISUAL"
+	fi
+else
+	USE_EDITOR="$EDITOR"
+fi
+
+files=$($__BASE__/bin/hlp "$(getEnv)" $@) || { ret=$?; echo "hlp cmd failed.  said: $files"; exit $ret; }
+
+[ -z "$files" ] && { echo "no files found"; exit 1; }
+
+numFiles=$(echo "$files" | wc -l)
+
+if [ "$numFiles" -gt 1 ]; then
+	while [ -z "$file" ]; do
+		i=0
+		echo "Please select a file to edit: "
+		echo "0: All"
+		for f in $files; do
+			i=$(( $i + 1 ))
+			echo "$i: $f"
+		done
+		echo ""
+		echo -n "File? "
+		read fileNum
+
+		if [ "$fileNum" -eq 0 ]; then
+			file="$files"
+		elif [ "$fileNum" -eq "$fileNum" 2> /dev/null -a "$fileNum" -le "$numFiles" ]; then
+			file=$(echo "$files" | head -n$fileNum | tail -n 1);
+		else
+			echo "Please enter a valid file number"
+			echo ""
+			echo ""
+		fi
+	done
+else
+	file=$( echo "$files" | head -n1 );
+fi
+
+[ -z "$files" ] && { echo "internal error?"; exit 44; }
+
+$USE_EDITOR $file

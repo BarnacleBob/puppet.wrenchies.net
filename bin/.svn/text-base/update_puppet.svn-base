@@ -1,0 +1,6 @@
+#!/bin/bash
+
+[ ! -e "/etc/puppet" ] && { echo "puppet checkout doesn't exist on this machine"; exit 1; }
+
+cd /etc/puppet
+sudo svn up

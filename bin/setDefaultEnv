@@ -1,0 +1,19 @@
+#!/bin/bash
+
+[ -e "$(dirname $0)/functions.sh" ] && source $(dirname $0)/functions.sh || { echo "could not find functions.sh to source"; exit 5; }
+
+if [ ! -z "$passedEnv" ]; then
+	setDefaultEnv $passedEnv && { echo "default set to $passedEnv"; exit 0; } || { echo "failed to set default environment to $passedEnv"; exit 1; }
+fi
+
+if [ ! -z "$1" ]; then
+	echo "($1) is not a valid environment"
+	echo ""
+fi
+
+echo "$0 <env>"
+echo "sets the default environment for other puppet dev commands"
+echo ""
+usageEnvironments
+
+exit 2	

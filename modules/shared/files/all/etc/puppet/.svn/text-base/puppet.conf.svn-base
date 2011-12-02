@@ -1,0 +1,50 @@
+[main]
+logdir=/var/log/puppet
+vardir=/var/lib/puppet
+ssldir=/var/lib/puppet/ssl
+rundir=/var/run/puppet
+pluginsync=true
+report = true
+factpath=/var/lib/puppet/lib/facter
+
+[puppetd]
+environment = <%= realEnvironment %>
+
+[puppetmasterd]
+#config_version=/etc/puppet/bin/getSvnVersion
+masterhttplog=/dev/null
+certdnsnames=puppet:puppet.<%= domain %>:puppet.localdomain
+certname=puppet
+storeconfigs=true
+dbpassword = "PupMySQEAL%"
+dbadapter = mysql
+dbuser=puppet
+dbserver=localhost
+dbsocket=/data/mysql/log/mysql.sock
+pidfile = /var/run/puppet/puppetmasterd.pid
+ignorecache = true
+
+<%	Dir.new("/etc/puppet/environments").each do |env| -%>
+<%		if env.to_s!="." and env.to_s!=".." and env.to_s!=".svn" and File.directory?("/etc/puppet/environments/" + env) then -%>
+[<%= env %>]
+modulepath=/etc/puppet/modules:/etc/puppet/environments/<%= env %>/modules
+manifest=/etc/puppet/environments/<%= env %>/site.pp
+<%		end -%>
+<%	end -%>
+
+#walk all the home directories looking for a puppet directory and setup an environment for it
+<%	home = Dir.new("/home") -%>
+<%	home.each do |d| -%>
+<%		if d.to_s!="." and d.to_s!=".." and File.directory?("/home/" + d) then -%>
+<%			if File.directory?("/home/" + d + "/puppet") or File.symlink?("/home/" + d + "/puppet") then -%>
+<%				Dir.new("/home/" + d + "/puppet/environments").each do |env| -%>
+<%					if env.to_s!="." and env.to_s!=".." and env.to_s!=".svn" and File.directory?("/home/" + d + "/puppet/environments/" + env) then -%>
+[<%= d %>_<%= env %>]
+	modulepath=/home/<%= d %>/puppet/modules:/home/<%= d %>/puppet/environments/<%= env %>/modules
+	manifest=/home/<%= d %>/puppet/environments/<%= env %>/site.pp
+	#config_version=/home/<%= d %>/puppet/getSvnVersion
+<%					end -%>
+<%				end -%>
+<%			end -%>
+<%		end -%>
+<%	end -%>

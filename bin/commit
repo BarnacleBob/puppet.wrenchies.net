@@ -1,0 +1,45 @@
+#!/bin/bash
+
+[ -e "$(dirname $0)/functions.sh" ] && source $(dirname $0)/functions.sh || { echo "could not find functions.sh to source"; exit 5; }
+
+function usage {
+	echo "$0 [-m] <commit message> [<file> [<file> [..]]]"
+	echo ""
+	echo "commit is used to wrap svn commit to add syntax checking"
+	echo "and an automatic update of the in use puppet check"
+	echo "you can pass specific files to commit like snv commit"
+	echo "or do everything with passing no arguments"
+	echo ""
+	echo "your current wd must be the base of your puppet checkout"
+	exit 2
+}
+
+[ "$1" == "-m" ] && shift
+
+[ -z "$1" ] && usage
+
+msg="$1"
+shift
+
+curwd=$( echo "$(readlink $(pwd) || pwd)" | perl -ple 's#/$##' )
+
+[ "$__BASE__" != "$curwd" ] && usage
+
+if svnBadEdits; then
+	echo "*WARNING* there are currently svn status items of concern (unadded files, conflics, deletes, etc) in your checkout"
+	echo "*WARNING*   it is recommended you clean these up before proceding"
+	
+	pause
+fi
+
+echo "going to commit with message ($msg):"
+echo "----------------------------------"
+svn status $@
+
+pause
+
+$__BASE__/bin/check_syntax $@ || { ret=$?; echo "syntax check failed,  please correct before commit"; exit $ret; }
+
+svn commit -m "$msg" $@
+
+$__BASE__/bin/update_puppet

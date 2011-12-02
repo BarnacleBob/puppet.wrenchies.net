@@ -1,0 +1,23 @@
+<% if !aliases.is_a?(Array); aaliases=[aliases]; else; aaliases=aliases.flatten; end -%>
+<% if !extraDirectives.is_a?(Array); aed=[extraDirectives]; else; aed=extraDirectives.flatten; end -%>
+<% if !directoryDirectives.is_a?(Array); add=[directoryDirectives]; else; add=directoryDirectives.flatten; end -%>
+<VirtualHost <%= listen %>>
+	ServerAdmin webmaster@<%= name %>
+	DocumentRoot <%= documentRoot %>
+	ServerName <%= name %>
+<% aaliases.each do |a| -%>
+	ServerAlias <%= a %>
+<% end -%>
+	ErrorLog /data/logs/vhosts/<%= name %>/error.log
+	CustomLog /data/logs/vhosts/<%= name %>/access.log common
+
+	<directory "<%= documentRoot %>">
+<% add.each do |dd| -%>
+		<%= dd %>
+<% end -%>
+	</directory>
+
+<% aed.each do |ed| -%>
+	<%= ed %>
+<% end -%>
+</VirtualHost>
