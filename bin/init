@@ -37,11 +37,13 @@ cd "$REPO"
 $GIT init > /dev/null || { echo "failed to init a empty git repo in $REPO"; exit 1; }
 
 $GIT submodule add $WRENCHIES_REPO puppet.wrenchies.net > /dev/null || { echo "failed to clone puppet framework into a submodule"; exit 1; }
+$GIT add puppet.wrenchies.net > /dev/null
 
 exit 0
 
 #setup intial stuff
 $BIN="$REPO/puppet.wrenchies.net/bin"
 $BIN/new modules
-$BIN/new environment
+$BIN/new environment $FIRST_ENV
 
+$GIT commit -a -m "Initializing puppet.wrenchies.net framework" > /dev/null || { echo "failed to commit initialized repository"; exit 1; }
