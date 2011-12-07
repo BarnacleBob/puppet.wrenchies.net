@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 if [ "$1" == "DEBUG" ]; then
 	set -x 
@@ -20,7 +20,7 @@ function walkPathFor {
 binPath=$0
 [ "${binPath:0:1}" != "/" ] && binPath="$(pwd)/$binPath"
 
-__BASE__=$(walkPathFor puppet $binPath) || { echo "could not determin base path for the puppet directory"; exit 1; }
+__BASE__=$(dirname $(walkPathFor puppet.wrenchies.net $binPath)) || { echo "could not determin base path for the puppet directory"; exit 1; }
 
 function pause {
 	read -p "press enter to continue..."

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 [ -e "$(dirname $0)/functions.sh" ] && source $(dirname $0)/functions.sh || { echo "could not find functions.sh to source"; exit 5; }
 
@@ -36,12 +36,12 @@ function class {
 	[ -e "$(getEnvManifestPath $env)/classes/$1.pp" ] && { echo "class $1 already exists in $env"; exit 1; }
 	cat > $(getEnvManifestPath $env)/classes/$1.pp <<-NEW
 		class $passedEnv::$1 {
-			
+
 		}
 	NEW
-	
-	svn add $(getEnvManifestPath $env)/classes/$1.pp
-	
+
+	git add $(getEnvManifestPath $env)/classes/$1.pp
+
 	$__BASE__/bin/edit $env class $1
 }
 function role {
@@ -51,34 +51,34 @@ function role {
 	cat > $(getEnvManifestPath $env)/roles/$1.pp <<-NEW
 		class $passedEnv::role::$1 {
 		 	\$role="$1"
-			
+
 		}
 	NEW
-	
-	svn add $(getEnvManifestPath $env)/roles/$1.pp
-	
+
+	git add $(getEnvManifestPath $env)/roles/$1.pp
+
 	$__BASE__/bin/edit $env role $1
 }
 function define {
 	env=$(getEnv) || { echo "environment doesn't exist"; exit 1; }
-	
+
 	if [ "$env" != "shared" ]; then
 		prefix="$env::"
 	fi
-	
+
 	[ -e "$(getEnvManifestPath $env)/defines/$1.pp" ] && { echo "define $1 already exists in $env"; exit 1; }
 	cat > $(getEnvManifestPath $env)/defines/$1.pp <<-NEW
 		define $prefix$1 (\$ensure="present") {
 		 	if \$ensure=="present" {
-			
+
 		 	}else{
-			
+
 		 	}
 		}
 	NEW
-		
-	svn add $(getEnvManifestPath $env)/defines/$1.pp
-	
+
+	git add $(getEnvManifestPath $env)/defines/$1.pp
+
 	$__BASE__/bin/edit $env define $1
 }
 
@@ -88,7 +88,7 @@ function modules {
 	cat > $__BASE__/modules/syntax.pp <<-SYNTAX
 		import "./*/manifests/init.pp"
 	SYNTAX
-	svn add $__BASE__/modules
+	git add $__BASE__/modules
 }
 
 function module {
@@ -99,12 +99,12 @@ function module {
 
 	if [ "$2" == "extra" ]; then
 		mkdir -p $__BASE__/modules/$1/{files/{all,role},manifests/{classes,roles,defines}}
-		
+
 		touch $__BASE__/modules/$1/manifests/defaults.pp
 		touch $__BASE__/modules/$1/manifests/roles/blank.pp
 		touch $__BASE__/modules/$1/manifests/classes/blank.pp
 		touch $__BASE__/modules/$1/manifests/defines/blank.pp
-		
+
 		cat > $__BASE__/modules/$1/manifests/init.pp <<-INIT	
 			import "./defaults.pp"
 			import "./roles/*.pp"
@@ -112,22 +112,22 @@ function module {
 			import "./defines/*.pp"
 		INIT
 	fi
-	
-	svn add $__BASE__/modules/$1
+
+	git add $__BASE__/modules/$1
 }
 
 function environment {
 	#create a new environment
 	isEnvironment $1 && { echo "environment $1 already exists"; exit 1; }
-	
+
 	mkdir -p $__BASE__/environments/$1/modules/main/{files/{all,role,host},manifests/{classes,roles,defines}}
-	
+
 	touch $__BASE__/environments/$1/nodes.pp
 	touch $__BASE__/environments/$1/modules/main/manifests/defaults.pp
 	touch $__BASE__/environments/$1/modules/main/manifests/roles/blank.pp
 	touch $__BASE__/environments/$1/modules/main/manifests/classes/blank.pp
 	touch $__BASE__/environments/$1/modules/main/manifests/defines/blank.pp
-	
+
 	cat > $__BASE__/environments/$1/site.pp <<-SITE
 		import "shared"
 		import "main"
@@ -144,7 +144,7 @@ function environment {
 		import "./defines/*.pp"
 	INIT
 
-	[ ! -d "$__BASE__/environments/.svn" ] && svn add $__BASE__/environments || svn add $__BASE__/environments/$1
+	git add $__BASE__/environments/$1
 }
 
 $command $@
