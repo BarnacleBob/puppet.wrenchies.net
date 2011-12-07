@@ -14,7 +14,7 @@ REPO="$REPLY"
 FIRST_ENV=""
 
 while [[ -z "$FIRST_ENV" ]]; do
-	read -p "What would you like to call your initial environment (production is reserved.  see documentation)?"
+	read -p "What would you like to call your initial environment (production is reserved.  see documentation)? "
 
 	if [[ "$REPLY" == "production" ]]; then
 		echo "seriously?"
@@ -24,7 +24,7 @@ while [[ -z "$FIRST_ENV" ]]; do
 done
 
 if [ -d "$REPO" ]; then
-	read -i "yes" -p "$REPO directory exists, can i delete it?"
+	read -i "yes" -p "$REPO directory exists, can i delete it (yes)/no? "
 	if [[ "$REPLY" == "yes" ]]; then
 		rm -rf "$REPO"
 	fi
