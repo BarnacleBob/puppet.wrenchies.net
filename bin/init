@@ -39,10 +39,8 @@ $GIT init > /dev/null || { echo "failed to init a empty git repo in $REPO"; exit
 $GIT submodule add $WRENCHIES_REPO puppet.wrenchies.net > /dev/null || { echo "failed to clone puppet framework into a submodule"; exit 1; }
 $GIT add puppet.wrenchies.net > /dev/null
 
-exit 0
-
 #setup intial stuff
-$BIN="$REPO/puppet.wrenchies.net/bin"
+BIN="$REPO/puppet.wrenchies.net/bin"
 $BIN/new modules
 $BIN/new environment $FIRST_ENV
 
