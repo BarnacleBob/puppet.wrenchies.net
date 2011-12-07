@@ -144,6 +144,9 @@ function environment {
 		import "./defines/*.pp"
 	INIT
 
+	#we do this trick to add the empty directories to git to help users understand paths
+	find $__BASE__/environments/$1 -type d -empty -print0 | xargs -0 -I{} touch '{}'/.gitignore
+
 	git add $__BASE__/environments/$1
 }
 
