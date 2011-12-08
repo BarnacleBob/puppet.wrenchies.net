@@ -3,11 +3,15 @@
 #check if we have some stuff installed
 GIT=$(which git) || { echo "You must have git installed prior to running init"; exit 1; }
 
-read -p "Enter your github account (not email) or leave blank: "
+GITHUB=""
 
-GITHUB="$REPLY@"
-WRENCHIES_REPO="https://${GITHUB}github.com/BarnacleBob/puppet.wrenchies.net.git"
+while [[ "$GITHUB" == "" ]]; do
+	read -p "How do you want to access github (https)/ssh? "
+	[[ "$REPLY" == "ssh" ]] && GITHUB="git@github.com:"
+	[[ "$REPLY" == "" || "$REPLY" == "https" ]] && GITHUB="https://github.com/"
+done
 
+WRENCHIES_REPO="${GITHUB}BarnacleBob/puppet.wrenchies.net.git"
 
 REPO="$(pwd)/puppet"
 
