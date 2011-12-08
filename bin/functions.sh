@@ -31,12 +31,22 @@ function isEnvironment {
 	return 1
 }
 
+function isProductionEnv {
+	[ "$1" == "production" ] && return 0
+	return 1
+}
+
+function isFrameworkEnv {
+	[ "$1" == "framework" ] && return 0
+	return 1
+}
+
 function isShared {
 	[ "$1" == "shared" ] && [ -e "$__BASE__/modules/shared" ] && return 0
 	return 1
 }
 
-if isEnvironment "$1" || isShared "$1"; then
+if isEnvironment "$1" || isShared "$1" || isProductionEnv "$1" || isFrameworkEnv "$1" ; then
 	passedEnv=$1
 	shift
 fi
@@ -59,18 +69,18 @@ function getEnv {
 
 function getEnvPath {
 	local env
-	env=$(getEnv) || return $?
+	env=$(getFrameworkAwareEnv) || return $?
 	isEnvironment $env && { echo "$__BASE__/environments/$env/modules/main"; return 0; }
 	isShared $env && { echo "$__BASE__/modules/shared"; return 0; }
+	isProductionEnv $env && { echo "$__BASE__/puppet.wrenchies.net/environments/production/modules/main"; return 0; }
+	isFrameworkEnv $env && { echo "$__BASE__/puppet.wrenchies.net/modules/framework"; return 0; }
 	return 1
 }
 
 function getEnvManifestPath {
-	if isEnvironment $1 || isShared $1; then
-		echo "$(getEnvPath $1)/manifests"
-		return 0
-	fi
-	return 1
+	path=$(getEnvPath) || return $?
+	echo "${path}/manifests"
+	return 0
 }
 
 function getEnvironments {

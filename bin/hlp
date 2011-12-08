@@ -36,23 +36,23 @@ function intgrep {
 function nodes {
 	env=$(getEnv) || usage
 	isShared $env && usage
-	
-	echo "$__BASE__/environments/$env/nodes.pp"
+
+	echo "$(getEnvPath)/../../nodes.pp"
 }
 
 function file {
 	env=$(getEnv) || usage
-	
+
 	find $(getEnvPath)/files -name "$1" || { echo "none found"; exit 1; }
 }
 
 function defines {
 	env=$(getEnv) || usage
-	
+
 	if [ "$env" != "shared" ]; then
 		prefix="$env::"
 	fi
-	
+
 	echo "defines available in $env"
 	echo "-------------------------"
 	egrep -irho --exclude="*.svn*" "define[[:space:]]+$prefix[^[:space:]]+[[:space:]]*\(" $(getEnvManifestPath)/defines | perl -ple "s#define\s*$prefix(\S*)\s*\(#\1#ig"
@@ -60,13 +60,13 @@ function defines {
 
 function define {
 	env=$(getEnv) || usage
-	
+
 	[ -z "$1" ] && usage
 
 	if [ "$env" != "shared" ]; then
 		prefix="$env::"
 	fi
-		
+
 	egrep -irl --exclude="*.svn*" "define[[:space:]]+$prefix$1[[:space:]]*\(" $(getEnvManifestPath)/defines || { echo "none found"; exit 1; }
 }
 
@@ -79,9 +79,9 @@ function classes {
 
 function class {
 	env=$(getEnv) || usage
-	
+
 	[ -z "$1" ] && usage
-	
+
 	egrep -irl --exclude="*.svn*" "class[[:space:]]+$env::$1[[:space:]]*(\{|inherits)" $(getEnvManifestPath)/classes || { echo "none found"; exit 1; }
 }
 
@@ -94,15 +94,15 @@ function roles {
 
 function role {
 	env=$(getEnv) || usage
-	
+
 	[ -z "$1" ] && usage
-	
+
 	egrep -irl --exclude="*.svn*" "class[[:space:]]+$env::role::$1[[:space:]]*(\{|inherits)" $(getEnvManifestPath)/roles || { echo "none found"; exit 1; }
 }
 
 function defaults {
 	env=$(getEnv) || usage
-	
+
 	echo $(getEnvManifestPath)/defaults.pp || { exit 1; }
 }
 
@@ -111,7 +111,7 @@ case $1 in
 		command=$1
 		[ "$command" == "grep" ] && command="intgrep"
 		shift
-		
+
 		$command $@
 		;;
 	*) usage ;;

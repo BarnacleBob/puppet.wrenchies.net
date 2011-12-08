@@ -42,7 +42,7 @@ function class {
 
 	git add $(getEnvManifestPath $env)/classes/$1.pp
 
-	$__BASE__/bin/edit $env class $1
+	$__BASE__/puppet.wrenchies.net/bin/edit $env class $1
 }
 function role {
 	env=$(getEnv) || { echo "environment doesn't exist"; exit 1; }

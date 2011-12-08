@@ -36,7 +36,7 @@ else
 	USE_EDITOR="$EDITOR"
 fi
 
-files=$($__BASE__/bin/hlp "$(getEnv)" $@) || { ret=$?; echo "hlp cmd failed.  said: $files"; exit $ret; }
+files=$($__BASE__/puppet.wrenchies.net/bin/hlp "$(getEnv)" $@) || { ret=$?; echo "hlp cmd failed.  said: $files"; exit $ret; }
 
 [ -z "$files" ] && { echo "no files found"; exit 1; }
 
