@@ -69,7 +69,7 @@ function getEnv {
 
 function getEnvPath {
 	local env
-	env=$(getFrameworkAwareEnv) || return $?
+	env=$(getEnv) || return $?
 	isEnvironment $env && { echo "$__BASE__/environments/$env/modules/main"; return 0; }
 	isShared $env && { echo "$__BASE__/modules/shared"; return 0; }
 	isProductionEnv $env && { echo "$__BASE__/puppet.wrenchies.net/environments/production/modules/main"; return 0; }

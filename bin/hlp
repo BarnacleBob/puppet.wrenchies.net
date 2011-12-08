@@ -43,19 +43,19 @@ function nodes {
 function file {
 	env=$(getEnv) || usage
 
-	find $(getEnvPath)/files -name "$1" || { echo "none found"; exit 1; }
+	find $(getEnvPath)/files -name "$1" -type f|| { echo "none found"; exit 1; }
 }
 
 function defines {
 	env=$(getEnv) || usage
 
-	if [ "$env" != "shared" ]; then
+	if [ "$env" != "framework" -a "$env" != "shared" ]; then
 		prefix="$env::"
 	fi
 
 	echo "defines available in $env"
 	echo "-------------------------"
-	egrep -irho --exclude="*.svn*" "define[[:space:]]+$prefix[^[:space:]]+[[:space:]]*\(" $(getEnvManifestPath)/defines | perl -ple "s#define\s*$prefix(\S*)\s*\(#\1#ig"
+	egrep -irho --exclude="*.svn*" "define[[:space:]]+$prefix[^[:space:]]+[[:space:]]*\(" $(getEnvManifestPath)/ | perl -ple "s#define\s*$prefix(\S*)\s*\(#\1#ig"
 }
 
 function define {
@@ -63,11 +63,11 @@ function define {
 
 	[ -z "$1" ] && usage
 
-	if [ "$env" != "shared" ]; then
+	if [ "$env" != "framework" -a "$env" != "shared" ]; then
 		prefix="$env::"
 	fi
 
-	egrep -irl --exclude="*.svn*" "define[[:space:]]+$prefix$1[[:space:]]*\(" $(getEnvManifestPath)/defines || { echo "none found"; exit 1; }
+	egrep -irl --exclude="*.svn*" "define[[:space:]]+$prefix$1[[:space:]]*\(" $(getEnvManifestPath)/ || { echo "none found"; exit 1; }
 }
 
 function classes {
