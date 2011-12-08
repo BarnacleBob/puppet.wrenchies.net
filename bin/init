@@ -50,6 +50,7 @@ $GIT add puppet.wrenchies.net > /dev/null
 #setup intial stuff
 BIN="$REPO/puppet.wrenchies.net/bin"
 $BIN/new modules
+$BIN/new module shared extra
 $BIN/new environment $FIRST_ENV
 
 $GIT commit -a -m "Initializing puppet.wrenchies.net framework" > /dev/null || { echo "failed to commit initialized repository"; exit 1; }

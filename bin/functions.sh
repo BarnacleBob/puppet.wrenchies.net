@@ -86,6 +86,7 @@ function getEnvManifestPath {
 function getEnvironments {
 	echo -n $(ls $__BASE__/environments/)
 	[ -e "$__BASE__/modules/shared" ] && echo -n " shared"
+	echo " framework production"
 	if [ "$(ls $__BASE__/environments | wc -l)" -lt 1 -a ! -e "$__BASE__/modules/shared" ]; then
 		return 1
 	fi
