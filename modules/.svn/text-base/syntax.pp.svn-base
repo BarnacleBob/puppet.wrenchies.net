@@ -1,1 +1,0 @@
-import "./*/manifests/init.pp"
