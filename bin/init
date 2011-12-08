@@ -6,14 +6,14 @@ GIT=$(which git) || { echo "You must have git installed prior to running init"; 
 read -p "Enter your github account (not email) or leave blank: "
 
 GITHUB="$REPLY@"
-WRENCHIES_REPO="https://$GITHUBgithub.com/BarnacleBob/puppet.wrenchies.net.git"
+WRENCHIES_REPO="https://${GITHUB}github.com/BarnacleBob/puppet.wrenchies.net.git"
 
 
 REPO="$(pwd)/puppet"
 
 read -p "Where would you like to initialize [$REPO]? " -i "$REPO"
 
-REPO="$REPLY"
+[ ! -z "$REPLY" ] && REPO="$REPLY"
 
 FIRST_ENV=""
 
@@ -34,7 +34,7 @@ if [ -d "$REPO" ]; then
 	fi
 fi
 
-mkdir -p "$REPO"
+mkdir -p "$REPO" || { echo "unable to create repo directory $REPO"; exit 1; }
 
 cd "$REPO"
 
