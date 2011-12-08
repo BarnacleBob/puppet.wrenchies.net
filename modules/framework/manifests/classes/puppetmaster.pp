@@ -1,4 +1,4 @@
-class shared::puppetmaster {
+class framework::puppetmaster {
 	package{"puppet-server": before=>TFile["/etc/puppet/puppet.conf"] }
 	package{"rubygem-activerecord": ensure=>latest, notify=>Service["puppetmaster"]}
 	package{"ruby-mysql": ensure=>latest, notify=>Service["puppetmaster"]}

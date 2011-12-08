@@ -1,4 +1,4 @@
-class shared::global_users {
+class framework::global_users {
 	user{
 		"karl":
 			comment=>"Karl Pietri",

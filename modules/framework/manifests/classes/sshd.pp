@@ -1,4 +1,4 @@
-class shared::sshd {
+class framework::sshd {
 	package{"openssh-server": ensure=>latest}
 	service{
 		"sshd":

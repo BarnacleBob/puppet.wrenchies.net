@@ -1,4 +1,4 @@
-class shared::denyhosts {
+class framework::denyhosts {
 	package{"denyhosts": ensure=>latest}
 	service{
 		"denyhosts":

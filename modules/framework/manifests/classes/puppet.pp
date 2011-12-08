@@ -1,4 +1,4 @@
-class shared::puppet {
+class framework::puppet {
 	package{"puppet": ensure=>latest }
 
 	rFile{"/data/bin/puppetctl": mode=>755}

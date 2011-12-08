@@ -1,4 +1,4 @@
-class shared::base {
+class framework::base {
 	dir{"/data": }
 	dir{"/data/logs": }
 	dir{"/data/config": }

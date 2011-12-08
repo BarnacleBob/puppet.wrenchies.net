@@ -1,4 +1,4 @@
-class shared::apache {
+class framework::apache {
 	package{"httpd": ensure=>installed}
 	
 	rFile{"/etc/httpd/conf/httpd.conf": require=>Package["httpd"], notify=>Service["httpd"]}

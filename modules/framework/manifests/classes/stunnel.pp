@@ -1,4 +1,4 @@
-class shared::stunnel {
+class framework::stunnel {
 	package{"stunnel": ensure=>latest}
 	managedDir{"/etc/stunnel": owner=>nobody,group=>nobody}
 	dir{"/var/run/stunnel": owner=>nobody}

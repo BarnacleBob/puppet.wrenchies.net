@@ -1,4 +1,4 @@
-class shared::iptables {
+class framework::iptables {
 	rFile{"/etc/sysconfig/iptables": notify=>Service["iptables"],mode=>600}
 	rFile{"/etc/sysconfig/iptables-config": notify=>Service["iptables"],mode=>644}
 	
@@ -13,7 +13,7 @@ class shared::iptables {
 }
 
 
-class shared::ipables::disabled {
+class framework::ipables::disabled {
 	service{
 		"iptables":
 			enable=>false,

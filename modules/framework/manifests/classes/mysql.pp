@@ -1,4 +1,4 @@
-class shared::mysql {
+class framework::mysql {
 	package{"mysql-server": ensure=>installed}
 	rFile{"/etc/my.cnf": require=>Package["mysql-server"],notify=>Exec["start mysql"]}
 	

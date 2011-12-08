@@ -1,4 +1,4 @@
-class shared::haproxy {
+class framework::haproxy {
 	package{"haproxy": ensure=>installed}
 
 	tFile{"/etc/haproxy/haproxy.cfg": require=>Package["haproxy"], notify=>Service["haproxy"]}

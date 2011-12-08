@@ -1,4 +1,4 @@
-class shared::epel {
+class framework::epel {
 	if $lsbdistid=="CentOS" {
 		rFile{"/tmp/epel-release-5-4.noarch.rpm": }
 
