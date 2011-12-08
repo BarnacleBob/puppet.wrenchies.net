@@ -1,17 +1,21 @@
 #!/bin/bash
 
-WRENCHIES_REPO="https://github.com/BarnacleBob/puppet.wrenchies.net.git"
-
 #check if we have some stuff installed
-GIT=$(which git) || { echo "You must have git installed prior to running init"; exit 1; }
+GIT = $(which git) || { echo "You must have git installed prior to running init"; exit 1; }
 
-REPO="$(pwd)/puppet"
+read -p "Enter your github account (not email) or leave blank: "
+
+GITHUB = "$REPLY@"
+WRENCHIES_REPO = "https://$GITHUBgithub.com/BarnacleBob/puppet.wrenchies.net.git"
+
+
+REPO = "$(pwd)/puppet"
 
 read -p "Where would you like to initialize [$REPO]? " -i "$REPO"
 
-REPO="$REPLY"
+REPO = "$REPLY"
 
-FIRST_ENV=""
+FIRST_ENV = ""
 
 while [[ -z "$FIRST_ENV" ]]; do
 	read -p "What would you like to call your initial environment (production is reserved.  see documentation)? "
@@ -19,7 +23,7 @@ while [[ -z "$FIRST_ENV" ]]; do
 	if [[ "$REPLY" == "production" ]]; then
 		echo "seriously?"
 	else
-		FIRST_ENV="$REPLY"
+		FIRST_ENV = "$REPLY"
 	fi
 done
 
@@ -40,7 +44,7 @@ $GIT submodule add $WRENCHIES_REPO puppet.wrenchies.net > /dev/null || { echo "f
 $GIT add puppet.wrenchies.net > /dev/null
 
 #setup intial stuff
-BIN="$REPO/puppet.wrenchies.net/bin"
+BIN = "$REPO/puppet.wrenchies.net/bin"
 $BIN/new modules
 $BIN/new environment $FIRST_ENV
 
