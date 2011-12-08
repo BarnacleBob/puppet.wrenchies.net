@@ -1,6 +1,6 @@
 #!/bin/bash
 
-WRENCHIES_REPO="/home/karl/git/puppet.wrenchies.net"
+WRENCHIES_REPO="https://github.com/BarnacleBob/puppet.wrenchies.net.git"
 
 #check if we have some stuff installed
 GIT=$(which git) || { echo "You must have git installed prior to running init"; exit 1; }
