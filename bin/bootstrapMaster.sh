@@ -7,68 +7,72 @@ if [ "$__BASE__" == "/etc/puppet" ]; then
 	exit 1
 fi
 
-if [ -e "/etc/puppet" ]; then
-	if [ -e "/etc/puppet/.svn" ]; then
-		echo "will not remove /etc/puppet because its an svn checkout.  please delete it yourself"
-		exit 1
-	fi
-	
-	rm -rf /etc/puppet
+if [ "$EUID" != 0 ]; then
+	echo "Please run as root"
+	exit 1
 fi
 
+echo "installing puppet"
+#dpkg -i $__BASE__/puppet.wrenchies.net/packages/ubuntu/10.04/bootstrap/*.deb
 
-rpm -Uvh $__BASE__/modules/shared/files/all/tmp/epel-release-5-4.noarch.rpm
-yum -y install puppet
+#apt-get -yy -f install
+
+
 rm -rf /etc/puppet
 
-iptables -I RH-Firewall-1-INPUT -p tcp --dport 8140 -m state --state NEW -j ACCEPT
+echo "cloning this git repo to /etc/puppet.  this is almost certainly not what you want especially if you have the concept of a central repo.  you will want to clone from that, but you can fix that after this script finishes"
+pause
+git clone $__BASE__ /etc/puppet
 
-svn checkout $(svn info $__BASE__ | grep URL: | cut -d: -f2-) /etc/puppet
+echo "lauching puppet master"
+PUPPET_DIR=$(mktemp -d)
+mkdir "$PUPPET_DIR/logs"
+chown -R puppet:root "$PUPPET_DIR"
+chmod -R 750 "$PUPPET_DIR"
 
-cat $__BASE__/modules/shared/manifests/defines/*.pp > /tmp/puppetBootstrap.pp
+(
+	puppet master \
+		--verbose \
+		--debug \
+		--no-daemonize \
+		--color=false \
+		--masterport=8880 \
+		--autosign=true \
+		--filetimeout=2 \
+		--dns_alt_names="localhost" \
+		--vardir="$PUPPET_DIR" \
+		--ssldir="$PUPPET_DIR/ssl" \
+		--confdir="$PUPPET_DIR/conf" \
+		--config="/dev/null" \
+		--logdir="$PUPPET_DIR/logs" \
+		--modulepath="$__BASE__/puppet.wrenchies.net/modules:$__BASE__/puppet.wrenchies.net/environments/production/modules" \
+		--manifest="$__BASE__/puppet.wrenchies.net/environments/production/bootstrap.pp"
+) > $PUPPET_DIR/logs/forkedmaster.log 2>&1 &
 
-perl -i -ple "s#puppet://puppet#$__BASE__#ig" /tmp/puppetBootstrap.pp
-perl -i -ple "s#(modules/[^/]+)#\1/files#ig" /tmp/puppetBootstrap.pp
-perl -i -ple "s#\\\$prefix#$__BASE__#ig" /tmp/puppetBootstrap.pp
-perl -i -ple 's#\$realEnvironment#production#ig' /tmp/puppetBootstrap.pp
-perl -i -ple 's#files/files#files#ig' /tmp/puppetBootstrap.pp
+MASTER_PID="$!"
 
-cat >> /tmp/puppetBootstrap.pp <<-BOOTSTRAP
+echo "Puppet master launched $MASTER_PID with log $PUPPET_DIR/logs/forkedmaster.log"
 
-filebucket{"client": path=>"/var/lib/puppet/clientbucket" }
+echo puppet agent \
+	--test \
+	--server=localhost \
+	--masterport=8880 \
+	--vardir="$PUPPET_DIR" \
+	--ssldir="$PUPPET_DIR/ssl" \
+	--confdir="$PUPPET_DIR/conf" \
+	--config="/dev/null" \
 
-Exec { path=>"/bin:/usr/bin:/sbin:/usr/sbin" }
+sleep 1
 
-File{ backup=>"client" }
+tail -F $PUPPET_DIR/logs/forkedmaster.log
+pause
 
-\$realEnvironment="production"
-\$prefix="/etc/puppet"
+echo -n "killing puppetmaster"
+while [ -e "/proc/$MASTER_PID" ]; do
+	echo -n "."
+	kill $MASTER_PID
+	sleep 1
+done
 
-import "$__BASE__/modules/shared/manifests/classes/epel.pp"
-import "$__BASE__/modules/shared/manifests/classes/base.pp"
-import "$__BASE__/modules/shared/manifests/classes/mysql.pp"
-import "$__BASE__/modules/shared/manifests/classes/puppet.pp"
-import "$__BASE__/modules/shared/manifests/classes/puppetmaster.pp"
-
-node "$(hostname)" {
-	 dir{"/data": }
-	 dir{"/data/logs": }
-	 dir{"/data/config": }
-	 rDir{
-	 	"/data/bin":
-	 		sourceselect=>all,
-	 		purge=>true,
-	 		force=>true,
-	 }
-
-	 include shared::epel
-	 include shared::puppet
-	 include shared::mysql
-	 include shared::puppetmaster
-}
-
-BOOTSTRAP
-
-puppet --verbose /tmp/puppetBootstrap.pp
-
-#rm /tmp/puppetBootstrap.pp
+echo "removing puppet temp dir"
+rm -rf $PUPPET_DIR

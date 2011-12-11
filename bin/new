@@ -57,7 +57,7 @@ function role {
 
 	git add $(getEnvManifestPath $env)/roles/$1.pp
 
-	$__BASE__/bin/edit $env role $1
+	$__BASE__/puppet.wrenchies.net/bin/edit $env role $1
 }
 function define {
 	env=$(getEnv) || { echo "environment doesn't exist"; exit 1; }
@@ -79,7 +79,7 @@ function define {
 
 	git add $(getEnvManifestPath $env)/defines/$1.pp
 
-	$__BASE__/bin/edit $env define $1
+	$__BASE__/puppet.wrenchies.net/bin/edit $env define $1
 }
 
 function modules {
@@ -132,6 +132,7 @@ function environment {
 	touch $__BASE__/environments/$1/modules/main/manifests/defines/blank.pp
 
 	cat > $__BASE__/environments/$1/site.pp <<-SITE
+		import "framework"
 		import "shared"
 		import "main"
 		import "nodes.pp"

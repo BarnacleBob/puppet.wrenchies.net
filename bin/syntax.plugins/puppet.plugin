@@ -2,16 +2,32 @@
 
 [ -e "$(dirname $0)/../functions.sh" ] && source $(dirname $0)/../functions.sh || { echo "could not find functions.sh to source"; exit 5; }
 
+return=0
+
+for file in $@; do
+	if echo "$file" | egrep "syntax.pp" > /dev/null 2>&1; then
+		echo "checking $file"
+		puppet parser validate "$file"
+		ret=$?
+		[ "$ret" -ne 0 -a "$return" -eq 0 ] && return=$ret
+	fi
+done
+
+exit $return
+
+
+exit 1
+###########old code###########
 check_environments=""
 check_modules=""
 return=0
 
 for file in $@; do
-	if echo "$file" | egrep "puppet/modules/[^/]+/manifests/" >/dev/null 2>&1; then
+	if echo "$file" | egrep "modules/[^/]+/manifests/" >/dev/null 2>&1; then
 		check_modules="true"
 	fi
 	
-	if echo "$file" | egrep "(puppet/environments/[^/]+/modules/main/manifests/|puppet/environments/[^/]+/nodes.pp)" >/dev/null 2>&1; then
+	if echo "$file" | egrep "(environments/[^/]+/modules/main/manifests/|environments/[^/]+/nodes.pp|environments/[^/]+/syntax.pp)" >/dev/null 2>&1; then
 		thisEnv=$(echo "$file" | perl -nle 'print $1 if m#environments/([^/]+)/#' )
 		check_environments="$check_environments $thisEnv"
 	fi
@@ -24,7 +40,7 @@ fi
 
 if [ "$check_modules" == "true" ]; then
 	echo "checking modules:"
-	puppet --parseonly --verbose --debug $__BASE__/modules/syntax.pp
+	puppet parser validate $__BASE__/modules/syntax.pp
 	return=$?
 fi
 
@@ -32,7 +48,7 @@ check_environments=$(for a in $check_environments; do echo $a; done | sort |uniq
 
 for checkEnv in $check_environments; do	
 	echo "checking	$checkEnv:"
-	puppet --parseonly $__BASE__/environments/$checkEnv/syntax.pp
+	puppet parser validate $__BASE__/environments/$checkEnv/syntax.pp
 	return=$?
 done
 

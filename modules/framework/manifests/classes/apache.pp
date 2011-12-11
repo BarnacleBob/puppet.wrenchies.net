@@ -1,21 +1,52 @@
 class framework::apache {
+	managedDir{"/data/config/apache": }
+	dir{"/data/sites": }
+	dir{"/data/logs/vhosts": }
+	dir{"/data/logs/httpd": owner=>apache, group=>apache}
+	
+	case $lsbdistid {
+		"Ubuntu": {	class{"framework::apache::ubuntu": } }
+	}
+			
+	
+	tFile{"/data/config/apache/httpd.conf": }
+}
+
+class framework::apache::ubuntu {
+	package{"apache2": ensure=>latest}
+	service{
+		"apache2":
+			alias=>apache,
+			enable=>true,
+			ensure=>running,
+			require=>Package["apache2"],
+			restart=>"/etc/init.d/apache2 reload"
+	}
+
+
+	
+	file{"/etc/apache2/apache2.conf": ensure => "/data/config/apache/httpd.conf", require=>Package["apache2"], notify=>Service["apache"]}
+	exec{
+		"apache full restart":
+			command=>"/etc/init.d/apache2 stop; /etc/init.d/apache2 start",
+			refreshonly=>true,
+	}
+}
+
+class framework::apache::centos {
 	package{"httpd": ensure=>installed}
 	
-	rFile{"/etc/httpd/conf/httpd.conf": require=>Package["httpd"], notify=>Service["httpd"]}
+	file{"/etc/httpd/conf/httpd.conf": ensure => "/data/config/apache/httpd.conf", require => Package["httpd"], notify => Service["apache"]}
 	
 	service{
 		"httpd":
+			alias=>apache,
 			ensure=>running,
 			enable=>true,
 			restart=>"/etc/init.d/httpd graceful",
 			require=>Package["httpd"],
 			before=>Exec["apache full restart"]
 	}
-	
-	managedDir{"/data/config/httpd": }
-	dir{"/data/sites": }
-	dir{"/data/logs/vhosts": }
-	dir{"/data/logs/httpd": owner=>apache, group=>apache}
 	
 	exec{
 		"apache full restart":
@@ -34,7 +65,7 @@ define apache::listen ($vhosts="false"){
 		fail("Apache::Listen[$name] parameter vhosts needs to be true or false")
 	}
 	
-	$shaName=sha1($name)
+	$shaName = sha1($name)
 	
 	file{
 		"/data/config/httpd/listen_$shaName.conf":
@@ -49,14 +80,28 @@ namevirtualhost <%= listen %>
 
 }
 
-define apache::vhost ($documentRoot,$aliases="",$owner="root",$group="root",$mode="644",$extraDirectives="",$template="shared/apacheVhost",$listen="*:80",$defaultVhost="false",$puppetPushed="false",$sourceselect="all",$directoryDirectives=""){
+define apache::vhost (
+		$documentRoot,
+		$aliases = "",
+		$owner = "root",
+		$group = "root",
+		$mode = "644",
+		$template = "framework/apacheVhost",
+		$listen = "*:80",
+		$defaultVhost = "false",
+		$puppetPushed = "false",
+		$sourceselect = "all",
+		$topDirectives = "",
+		$vhostDirectives = "",
+		$directoryDirectives = ""){
+
 	if $defaultVhost=="true" {
-		$vhostprefix="000-default-"
+		$vhostprefix = "000-default-"
 	}else{
-		$vhostprefix=""
+		$vhostprefix = "001-"
 	}
 	
-	if $puppetPushed=="true" {
+	if $puppetPushed == "true" {
 		rDir{"$documentRoot": owner=>$owner,group=>$group,mode=>$mode,sourceselect=>$sourceselect}
 	}else{
 		dir{"$documentRoot": owner=>$owner,group=>$group,mode=>$mode}
@@ -71,13 +116,10 @@ define apache::vhost ($documentRoot,$aliases="",$owner="root",$group="root",$mod
 	file{
 		"/data/config/httpd/$vhostprefix$name.vhost":
 			content=>template($template),
-			notify=>Service["httpd"],
+			notify=>Service["apache"],
 			require=>[
-				Package["httpd"],
 				Dir["/data/logs/vhosts/$name"],
 				ManagedDir["/data/config/httpd"]
 			]
 	}
 }
-
-

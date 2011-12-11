@@ -1,0 +1,3 @@
+class framework::base::ubuntu {
+
+}

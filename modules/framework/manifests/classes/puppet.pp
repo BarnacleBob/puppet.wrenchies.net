@@ -1,5 +1,6 @@
 class framework::puppet {
-	package{"puppet": ensure=>latest }
+	package{"facter": ensure=>latest}
+	package{"puppet": ensure=>latest}
 
 	rFile{"/data/bin/puppetctl": mode=>755}
 	tFile{"/etc/puppet/puppet.conf": require=>Package["puppet"]}
@@ -8,7 +9,7 @@ class framework::puppet {
 
 	cron_d{
 		"puppetRun":
-			environment=>"MAILTO=barnaclebob+trackly@gmail.com",
+			environment=>"MAILTO=puppet@$domain",
 			command=>"/data/bin/puppetctl run cron",
 			hour=>"*",
 			minute=>inline_template("<% require 'ipaddr' %><%= IPAddr.new('$ipaddress').to_i % 60 %>"),

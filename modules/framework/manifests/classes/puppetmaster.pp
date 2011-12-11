@@ -1,27 +1,83 @@
 class framework::puppetmaster {
+	case $lsbdistid {
+		"Ubuntu": { include framework::puppetmaster::ubuntu_packages }
+		"Centos": { include framework::puppetmaster::centos_packages }
+	}
+	
+	dir{"/var/lib/puppet/run": owner=>"puppet", group=>"puppet", require=>Package["puppetmaster"]}
+	dir{[
+			"/etc/puppet/rack",
+			"/etc/puppet/rack/public"
+		]:
+			owner=>puppet,
+			group=>puppet,
+			require=>Package["puppetmaster-passenger"],
+			notify=>Service["apache"]
+	}
+	dir{"/var/lib/puppet/server_data": owner=>puppet,group=>puppet,mode=>750,require=>Package["puppetmaster-passenger"],notify=>Service["apache"]}
+	
+	tFile{"/etc/puppet/fileserver.conf": require=>Package["puppetmaster"]}
+	rFile{"/etc/puppet/rack/config.ru": notify=>Service["apache"],owner=>puppet,group=>puppet}
+	
+	#mysql::user{"puppet": grants=>"ALL on puppet.*", password=>"PupMySQEAL%", require=>Mysql::Database["puppet"]}
+	#mysql::database{"puppet": }
+	
+
+	apache::vhost{
+		"puppet":
+			documentRoot => "/etc/puppet/rack/public",
+			listen => "*:8140",
+			topDirectives => [
+				"PassengerHighPerformance on",
+				"PassengerMaxPoolSize 20",
+				"PassengerPoolIdleTime 3600",
+				"#PassengerMaxRequests 1000",
+				"PassengerStatThrottleRate 60",
+				"RackAutoDetect Off",
+				"RailsAutoDetect Off"
+			],
+			vhostDirectives => [
+				"SSLEngine on",
+				"SSLProtocol -ALL +SSLv3 +TLSv1",
+				"SSLCipherSuite ALL:!ADH:RC4+RSA:+HIGH:+MEDIUM:-LOW:-SSLv2:-EXP",
+
+				"SSLCertificateFile /var/lib/puppet/ssl/certs/puppet.pem",
+				"SSLCertificateKeyFile /var/lib/puppet/ssl/private_keys/puppet.pem",
+				"SSLCertificateChainFile /var/lib/puppet/ssl/ca/ca_crt.pem",
+				"SSLCACertificateFile /var/lib/puppet/ssl/ca/ca_crt.pem",
+
+				"#see known issue http://reductivelabs.com/trac/puppet/wiki/UsingMongrel",
+				"#SSLCARevocationFile /var/lib/puppet/ssl/ca/ca_crl.pem",
+
+				"SSLVerifyClient optional",
+				"SSLVerifyDepth  1",
+				"SSLOptions +StdEnvVars",
+
+				"RackBaseURI /",
+				"PassengerHighPerformance on",
+			],
+			directoryDirectives => [
+				"Options None",
+				"AllowOverride None",
+				"Order allow,deny",
+				"allow from all",
+			]
+	}
+}
+
+
+class framework::puppetmaster::centos_packages {
+	package{"puppetmaster-common": alias=>"puppetmaster", before => Package["puppetmaster-passenger"]}
+	package{"puppetmaster-passenger": notify=>Service["apache"]}
+	package{"libmysql-ruby": ensure=>latest}
+
+	package{"libapache2-mod-passenger": ensure=>latest}
+	package{"librack-ruby": ensure=>latest}
+	
+}
+
+class framework::puppetmaster::ubuntu_packages {	
 	package{"puppet-server": before=>TFile["/etc/puppet/puppet.conf"] }
 	package{"rubygem-activerecord": ensure=>latest, notify=>Service["puppetmaster"]}
 	package{"ruby-mysql": ensure=>latest, notify=>Service["puppetmaster"]}
-	
-	dir{"/var/lib/puppet/run": owner=>"puppet", group=>"puppet", require=>Package["puppet-server"], before=>Service["puppetmaster"]}
-
-	tFile{"/etc/puppet/fileserver.conf": require=>Package["puppet-server"], before=>Service["puppetmaster"]}
-	
-	mysql::user{"puppet": grants=>"ALL on puppet.*", password=>"PupMySQEAL%", require=>Mysql::Database["puppet"]}
-	mysql::database{"puppet": }
-
-	service{
-		"puppetmaster":
-			ensure=>running,
-			enable=>true,
-			hasstatus=>true,
-			restart=>"/sbin/service puppetmaster reload",
-			require=>[
-				Package["puppet-server"],
-				TFile["/etc/puppet/puppet.conf"],
-				Mysql::User["puppet"],
-				Mysql::Database["puppet"],
-				TFile["/etc/puppet/puppet.conf"],
-			],
-	}
 }

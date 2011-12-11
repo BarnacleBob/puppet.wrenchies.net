@@ -7,7 +7,9 @@ define rFile ($ensure="present",$backup=client,$owner=root,$group=root,$mode=644
 					"puppet://puppet/modules/main/role/$role/$name",
 					"puppet://puppet/modules/main/all/$name",
 					"puppet://puppet/modules/shared/role/$role/$name",
-					"puppet://puppet/modules/shared/all/$name"
+					"puppet://puppet/modules/shared/all/$name",
+					"puppet://puppet/modules/framework/role/$role/$name",
+					"puppet://puppet/modules/framework/all/$name",
 				],
 				backup=>$backup,
 				mode=>$mode,
