@@ -1,62 +1,124 @@
-class framework::apache {
+class framework::apache($std_modules="true") {
+	case $lsbdistid {
+		"Ubuntu": {
+			$package="apache2"
+			$service="apache2"
+			$user="www-data"
+			$group="www-data"
+			$config="/etc/apache2/apache2.conf"
+			$documentroot="/var/www"
+			$serverroot="/etc/apache2"
+			$pidfile="/var/run/apache2.pid"
+		}
+		"CentOs": {
+			$package="httpd"
+			$service="httpd"
+			$user="apache"
+			$group="apache"
+			$config="/etc/httpd/conf/httpd.conf"
+			$documentroot="/var/www/html"
+			$serverroot="/etc/httpd"
+			$pidfile="run/httpd.pid"
+		}
+	}
+	
+	if $std_modules=="true" {
+		include apache::modules::standard
+	}
+	
+	package{$package: ensure=>latest}
+	service{
+		$service:
+			alias=>apache,
+			enable=>true,
+			ensure=>running,
+			require=>Package[$package],
+			restart=>$lsbdistid ? {
+				"Ubuntu" => "/etc/init.d/apache2 reload",
+				"CentOs" => "/etc/init.d/httpd graceful"
+			},
+			before=>Exec["apache full restart"]
+	}
+
+	file{$config: ensure => "/data/config/apache/httpd.conf", require=>Package[$package], notify=>Service[$service]}
+	
+	exec{
+		"apache full restart":
+			command=>"/etc/init.d/$service stop; sleep 1; /etc/init.d/$service start",
+			refreshonly=>true,
+	}
+		
 	managedDir{"/data/config/apache": }
 	dir{"/data/sites": }
 	dir{"/data/logs/vhosts": }
-	dir{"/data/logs/httpd": owner=>apache, group=>apache}
-	
-	case $lsbdistid {
-		"Ubuntu": {	class{"framework::apache::ubuntu": } }
-	}
-			
+	dir{"/data/logs/httpd": owner=>$user, group=>$group}
 	
 	tFile{"/data/config/apache/httpd.conf": }
 }
 
-class framework::apache::ubuntu {
-	package{"apache2": ensure=>latest}
-	service{
-		"apache2":
-			alias=>apache,
-			enable=>true,
-			ensure=>running,
-			require=>Package["apache2"],
-			restart=>"/etc/init.d/apache2 reload"
-	}
-
-
-	
-	file{"/etc/apache2/apache2.conf": ensure => "/data/config/apache/httpd.conf", require=>Package["apache2"], notify=>Service["apache"]}
-	exec{
-		"apache full restart":
-			command=>"/etc/init.d/apache2 stop; /etc/init.d/apache2 start",
-			refreshonly=>true,
-	}
-}
-
-class framework::apache::centos {
-	package{"httpd": ensure=>installed}
-	
-	file{"/etc/httpd/conf/httpd.conf": ensure => "/data/config/apache/httpd.conf", require => Package["httpd"], notify => Service["apache"]}
-	
-	service{
-		"httpd":
-			alias=>apache,
-			ensure=>running,
-			enable=>true,
-			restart=>"/etc/init.d/httpd graceful",
-			require=>Package["httpd"],
-			before=>Exec["apache full restart"]
-	}
-	
-	exec{
-		"apache full restart":
-			command=>"/etc/init.d/httpd stop; /etc/init.d/httpd start",
-			refreshonly=>true,
-	}
-}
-
 class apache::health::site {
 	apache::vhost{"healthcheck": documentRoot=>"/data/sites/httpHealthCheck",listen=>"*:8888",puppetPushed=>"true"}
+}
+
+class apache::modules::standard {
+	apache::module{"alias": }
+	apache::module{"auth_basic": }
+	apache::module{"authn_file": }
+	apache::module{"authz_default": }
+	apache::module{"authz_groupfile": }
+	apache::module{"authz_host": }
+	apache::module{"autoindex": }
+	apache::module{"cgi": }
+	apache::module{
+		"deflate":
+			config=>[
+				"<IfModule mod_deflate.c>",
+				"	# these are known to be safe with MSIE 6",
+				"          AddOutputFilterByType DEFLATE text/html text/plain text/xml",
+				"          # everything else may cause problems with MSIE 6",
+				"          AddOutputFilterByType DEFLATE text/css",
+				"          AddOutputFilterByType DEFLATE application/x-javascript application/javascript application/ecmascript",
+				"          AddOutputFilterByType DEFLATE application/rss+xml",
+				"</IfModule>",
+			]
+	}
+	apache::module{"dir": }
+	apache::module{"env": }
+	apache::module{"headers": }
+	apache::module{"mime": }
+	apache::module{"negotiation": }
+	apache::module{"proxy": }
+	apache::module{"proxy_balancer": }
+	apache::module{"proxy_http": }
+	apache::module{"rewrite": }
+	apache::module{"setenvif": }
+	apache::module{"status": }
+}
+
+define apache::module ($so="false",$config="false"){
+	case $lsbdistid {
+		"Ubuntu": {$path="/usr/lib/apache2/modules"}
+		"CentOs": {$path="modules/"}
+	}
+	if $so=="false"{
+		$module_object="mod_$name.so"
+	}else{
+		$module_object="$so"
+	}
+	file{
+		"/data/config/apache/module_$name.conf":
+			notify=>Exec["apache full restart"],
+			require=>ManagedDir["/data/config/apache"],
+			content=>inline_template('
+				<% aconfig=[config].flatten %>
+				LoadModule <%= name %>_module <%= path %>/<%= module_object %>
+				<% if config!="false" then %>
+					<% aconfig.each do |c| %>
+						<%= c %>
+					<% end %>
+				<% end %><%= "\n" %>'
+			),
+	}
 }
 
 define apache::listen ($vhosts="false"){
@@ -68,14 +130,15 @@ define apache::listen ($vhosts="false"){
 	$shaName = sha1($name)
 	
 	file{
-		"/data/config/httpd/listen_$shaName.conf":
+		"/data/config/apache/listen_$shaName.conf":
 			notify=>Exec["apache full restart"],
+			require=>ManagedDir["/data/config/apache"],
 			content=>inline_template('
-listen <%= name %>
-<% if vhosts=="true" %>
-namevirtualhost <%= listen %>
-<% end %>
-'),
+				listen <%= name %>
+				<% if vhosts=="true" %>
+				namevirtualhost <%= listen %>
+				<% end %><%= "\n" %>'
+			),
 	}
 
 }
@@ -111,15 +174,15 @@ define apache::vhost (
 		apache::listen{$listen: vhosts=>"true"}
 	}
 	
-	dir{"/data/logs/vhosts/$name": owner=>"apache",group=>"apache"}
+	dir{"/data/logs/vhosts/$name": owner=>$framework::apache::user,group=>$framework::apache::group}
 	
 	file{
-		"/data/config/httpd/$vhostprefix$name.vhost":
+		"/data/config/apache/$vhostprefix$name.vhost":
 			content=>template($template),
-			notify=>Service["apache"],
+			notify=>Service[$framework::apache::service],
 			require=>[
 				Dir["/data/logs/vhosts/$name"],
-				ManagedDir["/data/config/httpd"]
+				ManagedDir["/data/config/apache"]
 			]
 	}
 }

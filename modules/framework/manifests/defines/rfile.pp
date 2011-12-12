@@ -3,13 +3,13 @@ define rFile ($ensure="present",$backup=client,$owner=root,$group=root,$mode=644
 		file{
 			"$name":
 				source=>[
-					"puppet://puppet/modules/main/host/$domain/$hostname/$name",
-					"puppet://puppet/modules/main/role/$role/$name",
-					"puppet://puppet/modules/main/all/$name",
-					"puppet://puppet/modules/shared/role/$role/$name",
-					"puppet://puppet/modules/shared/all/$name",
-					"puppet://puppet/modules/framework/role/$role/$name",
-					"puppet://puppet/modules/framework/all/$name",
+					"puppet:///modules/main/host/$domain/$hostname/$name",
+					"puppet:///modules/main/role/$role/$name",
+					"puppet:///modules/main/all/$name",
+					"puppet:///modules/shared/role/$role/$name",
+					"puppet:///modules/shared/all/$name",
+					"puppet:///modules/framework/role/$role/$name",
+					"puppet:///modules/framework/all/$name",
 				],
 				backup=>$backup,
 				mode=>$mode,

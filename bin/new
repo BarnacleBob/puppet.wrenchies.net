@@ -48,12 +48,24 @@ function role {
 	env=$(getEnv) || { echo "environment doesn't exist"; exit 1; }
 
 	[ -e "$(getEnvManifestPath $env)/roles/$1.pp" ] && { echo "role $1 already exists in $env"; exit 1; }
-	cat > $(getEnvManifestPath $env)/roles/$1.pp <<-NEW
-		class $passedEnv::role::$1 {
-		 	\$role="$1"
+	if [ "$1" == "puppetmaster" ]; then
+		cat > $(getEnvManifestPath $env)/roles/$1.pp <<-NEW
+			class $passedEnv::role::$1 {
+			 	\$role="$1"
 
-		}
-	NEW
+			 	include framework::base
+			 	include framework::apache
+			 	include framework::puppetmaster
+			}
+		NEW
+	else
+		cat > $(getEnvManifestPath $env)/roles/$1.pp <<-NEW
+			class $passedEnv::role::$1 {
+			 	\$role="$1"
+
+			}
+		NEW
+	fi
 
 	git add $(getEnvManifestPath $env)/roles/$1.pp
 

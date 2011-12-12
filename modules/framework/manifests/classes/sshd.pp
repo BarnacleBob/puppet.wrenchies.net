@@ -1,13 +1,23 @@
 class framework::sshd {
-	package{"openssh-server": ensure=>latest}
+	case $lsbdistid {
+		"Ubuntu": {
+			$package="openssh-server"
+			$service="ssh"
+		}
+		"CentOs": {
+			$package="openssh-server"
+			$service="sshd"
+		}
+	}
+	package{$package: ensure=>latest}
 	service{
-		"sshd":
+		$service:
 			ensure=>running,
 			enable=>true,
 			hasstatus=>true,
 			hasrestart=>true,
-			require=>Package["openssh-server"]
+			require=>Package[$package]
 	}
 	
-	rFile{"/etc/ssh/sshd_config": notify=>Service["sshd"],mode=>600}
+	rFile{"/etc/ssh/sshd_config": notify=>Service[$service],mode=>600}
 }

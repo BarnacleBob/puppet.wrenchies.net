@@ -52,5 +52,7 @@ BIN="$REPO/puppet.wrenchies.net/bin"
 $BIN/new modules
 $BIN/new module shared extra
 $BIN/new environment $FIRST_ENV
+$BIN/new $FIRST_ENV role puppetmaster
+echo "$(hostname -f) { include $FIRST_ENV::role::puppetmaster }" >> $($BIN/hlp $FIRST_ENV nodes)
 
 $GIT commit -a -m "Initializing puppet.wrenchies.net framework" > /dev/null || { echo "failed to commit initialized repository"; exit 1; }

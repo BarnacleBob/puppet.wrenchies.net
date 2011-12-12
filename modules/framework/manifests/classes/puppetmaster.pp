@@ -1,14 +1,23 @@
 class framework::puppetmaster {
 	case $lsbdistid {
-		"Ubuntu": { include framework::puppetmaster::ubuntu_packages }
-		"Centos": { include framework::puppetmaster::centos_packages }
+		"Ubuntu": {
+			package{"puppetmaster-common": alias=>"puppetmaster", before => Package["puppetmaster-passenger"]}
+			package{"puppetmaster-passenger": notify=>Service["apache"]}
+			package{"libmysql-ruby": ensure=>latest}
+
+			package{"libapache2-mod-passenger": ensure=>latest}
+			package{"librack-ruby": ensure=>latest}
+		}
+		"Centos": {
+			package{"puppet-server": before=>TFile["/etc/puppet/puppet.conf"] }
+			package{"rubygem-activerecord": ensure=>latest, notify=>Service["puppetmaster"]}
+			package{"ruby-mysql": ensure=>latest, notify=>Service["puppetmaster"]}
+		}
 	}
 	
 	dir{"/var/lib/puppet/run": owner=>"puppet", group=>"puppet", require=>Package["puppetmaster"]}
-	dir{[
-			"/etc/puppet/rack",
-			"/etc/puppet/rack/public"
-		]:
+	dir{
+		"/etc/puppet/rack":
 			owner=>puppet,
 			group=>puppet,
 			require=>Package["puppetmaster-passenger"],
@@ -27,6 +36,8 @@ class framework::puppetmaster {
 		"puppet":
 			documentRoot => "/etc/puppet/rack/public",
 			listen => "*:8140",
+			owner => "puppet",
+			group => "puppet",
 			topDirectives => [
 				"PassengerHighPerformance on",
 				"PassengerMaxPoolSize 20",
@@ -41,8 +52,8 @@ class framework::puppetmaster {
 				"SSLProtocol -ALL +SSLv3 +TLSv1",
 				"SSLCipherSuite ALL:!ADH:RC4+RSA:+HIGH:+MEDIUM:-LOW:-SSLv2:-EXP",
 
-				"SSLCertificateFile /var/lib/puppet/ssl/certs/puppet.pem",
-				"SSLCertificateKeyFile /var/lib/puppet/ssl/private_keys/puppet.pem",
+				"SSLCertificateFile /var/lib/puppet/ssl/certs/$::fqdn.pem",
+				"SSLCertificateKeyFile /var/lib/puppet/ssl/private_keys/$::fqdn.pem",
 				"SSLCertificateChainFile /var/lib/puppet/ssl/ca/ca_crt.pem",
 				"SSLCACertificateFile /var/lib/puppet/ssl/ca/ca_crt.pem",
 
@@ -63,21 +74,15 @@ class framework::puppetmaster {
 				"allow from all",
 			]
 	}
+	apache::module{
+		"passenger": 
+			config=>[
+				"<IfModule mod_passenger.c>",
+				"  PassengerRoot /usr",
+				"  PassengerRuby /usr/bin/ruby",
+				"</IfModule>",
+			]
+	}
+	apache::module{"ssl": }
 }
 
-
-class framework::puppetmaster::centos_packages {
-	package{"puppetmaster-common": alias=>"puppetmaster", before => Package["puppetmaster-passenger"]}
-	package{"puppetmaster-passenger": notify=>Service["apache"]}
-	package{"libmysql-ruby": ensure=>latest}
-
-	package{"libapache2-mod-passenger": ensure=>latest}
-	package{"librack-ruby": ensure=>latest}
-	
-}
-
-class framework::puppetmaster::ubuntu_packages {	
-	package{"puppet-server": before=>TFile["/etc/puppet/puppet.conf"] }
-	package{"rubygem-activerecord": ensure=>latest, notify=>Service["puppetmaster"]}
-	package{"ruby-mysql": ensure=>latest, notify=>Service["puppetmaster"]}
-}
