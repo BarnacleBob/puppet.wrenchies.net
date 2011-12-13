@@ -1,31 +1,39 @@
 class framework::mysql {
-	package{"mysql-server": ensure=>installed}
-	rFile{"/etc/my.cnf": require=>Package["mysql-server"],notify=>Exec["start mysql"]}
+	package{"mysql-server": ensure=>installed, notify=>Exec["stop mysql"]}
+	rFile{"/etc/mysql/my.cnf": require=>Package["mysql-server"],notify=>Exec["start mysql"]}
 	
 	dir{"/data/mysql": owner=>mysql, require=>Package["mysql-server"]}
 	dir{"/data/mysql/log": owner=>mysql, require=>Package["mysql-server"]}
-	dir{"/data/mysql/data": owner=>mysql, mode=>750, require=>Package["mysql-server"]}
+	dir{"/data/mysql/data": owner=>mysql, group=>mysql, mode=>750, require=>Package["mysql-server"]}
 	
 	exec{
 		"initalizeDatabases":
 			command=>"/usr/bin/mysql_install_db --datadir=/data/mysql/data --user=mysql",
 			creates=>"/data/mysql/data/mysql",
 			require=>[
-				RFile["/etc/my.cnf"],
+				RFile["/etc/mysql/my.cnf"],
 				Dir["/data/mysql/data"],
 				Dir["/data/mysql/log"],
-			]
+				Exec["stop mysql"]
+			],
+			notify=>Exec["start mysql"]
 	}
 	
 	exec{
 		"start mysql":
-			command=>"/etc/init.d/mysqld start",
+			command=>"/etc/init.d/mysql start",
+			refreshonly=>true,
+	}
+	
+	exec{
+		"stop mysql":
+			command=>"/etc/init.d/mysql stop",
 			refreshonly=>true,
 	}
 	
 	exec{
 		"check mysql root password":
-			command=>"/bin/echo Please set the mysql root password now on $hostname; /bin/false",
+			command=>"/bin/echo Please set the mysql root password now on $fqdn; /bin/false",
 			onlyif=>"/usr/bin/mysqladmin -u root version",
 			require=>Exec["start mysql"]
 	}
@@ -52,6 +60,7 @@ define mysql::user ($grants,$password,$hosts=""){
 			unless=>"/usr/bin/mysql -u '$name' -p'$password' -e 'show databases;'",
 			before=>Exec["check mysql root password"],
 			require=>Exec["start mysql"],
+			provider=>shell
 	}
 }
 			

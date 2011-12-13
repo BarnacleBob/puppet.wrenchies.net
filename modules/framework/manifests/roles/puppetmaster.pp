@@ -3,6 +3,7 @@ class framework::role::puppetmaster {
  	
  	include framework::base
 	include framework::apache
+	include framework::mysql
  	include framework::puppetmaster
 
 }

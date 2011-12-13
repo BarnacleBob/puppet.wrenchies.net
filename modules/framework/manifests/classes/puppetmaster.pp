@@ -29,10 +29,9 @@ class framework::puppetmaster {
 	tFile{"/etc/puppet/fileserver.conf": require=>Package["puppetmaster"]}
 	rFile{"/etc/puppet/rack/config.ru": notify=>Service["apache"],owner=>puppet,group=>puppet}
 	
-	#mysql::user{"puppet": grants=>"ALL on puppet.*", password=>"PupMySQEAL%", require=>Mysql::Database["puppet"]}
-	#mysql::database{"puppet": }
+	mysql::user{"puppet": grants=>"ALL on puppet.*", password=>"PupMySQEAL%", require=>Mysql::Database["puppet"]}
+	mysql::database{"puppet": }
 	
-
 	apache::vhost{
 		"puppet":
 			documentRoot => "/etc/puppet/rack/public",
@@ -85,5 +84,8 @@ class framework::puppetmaster {
 			]
 	}
 	apache::module{"ssl": }
+	
+	#note we need to graceful apache when the puppet.conf file changes to pick it up right away
+	TFile["/etc/puppet/puppet.conf"] ~> Service[$framework::apache::service]
 }
 

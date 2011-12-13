@@ -1,4 +1,4 @@
-define dir ($ensure="directory", $owner=root,$group=root,$mode=644,$purge=false,$recurse=false,$force=false) {
+define dir ($ensure="directory", $owner=root,$group=root,$mode=755,$purge=false,$recurse=false,$force=false) {
 	file{
 		"$name":
 			ensure=>$ensure,

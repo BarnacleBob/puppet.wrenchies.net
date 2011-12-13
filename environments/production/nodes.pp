@@ -1,3 +1,3 @@
 node default {
-	include shared::base
+	include framework::base
 }

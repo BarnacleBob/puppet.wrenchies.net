@@ -55,6 +55,7 @@ function role {
 
 			 	include framework::base
 			 	include framework::apache
+			 	include framework::mysql
 			 	include framework::puppetmaster
 			}
 		NEW

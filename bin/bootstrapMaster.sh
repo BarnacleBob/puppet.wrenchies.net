@@ -27,6 +27,11 @@ fi
 PUPPET_DIR=$(mktemp -d)
 mkdir "$PUPPET_DIR/logs"
 
+#purge apparmor
+if dpkg -l apparmor > /dev/null 2>&1 ; then
+	/etc/init.d/apparmor teardown >> $PUPPET_DIR/logs/apt.log 2>&1
+	apt-get -yy purge apparmor >> $PUPPET_DIR/logs/apt.log 2>&1
+fi
 
 
 if dpkg -l puppetmaster-passenger > /dev/null 2>&1 ; then
@@ -34,7 +39,7 @@ if dpkg -l puppetmaster-passenger > /dev/null 2>&1 ; then
 	read -p "would you like to reinstall? yes/(no)"
 
 	if [ "$REPLY" == "yes" ]; then
-		apt-get -yy purge $(ls $__BASE__/puppet.wrenchies.net/packages/ubuntu/10.04/bootstrap/*.deb | perl -nle 'print $1 if m#/([^/]+).deb#')
+		apt-get -yy purge $(ls $__BASE__/puppet.wrenchies.net/packages/ubuntu/10.04/bootstrap/*.deb >> $PUPPET_DIR/logs/apt.log 2>&1 | perl -nle 'print $1 if m#/([^/]+).deb#')
 	fi
 fi
 
