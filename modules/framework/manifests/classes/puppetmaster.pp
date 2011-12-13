@@ -16,6 +16,7 @@ class framework::puppetmaster {
 	}
 	
 	dir{"/var/lib/puppet/run": owner=>"puppet", group=>"puppet", require=>Package["puppetmaster"]}
+	dir{"/var/lib/puppet": owner=>"puppet", group=>"puppet", require=>Package["puppetmaster"]}
 	dir{
 		"/etc/puppet/rack":
 			owner=>puppet,

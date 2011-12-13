@@ -27,10 +27,26 @@ fi
 PUPPET_DIR=$(mktemp -d)
 mkdir "$PUPPET_DIR/logs"
 
-echo "installing puppet logs: $PUPPET_DIR/logs/apt.log"
-dpkg -i $__BASE__/puppet.wrenchies.net/packages/ubuntu/10.04/bootstrap/*.deb >> $PUPPET_DIR/logs/apt.log 2>&1
 
-apt-get -yy -f install >> $PUPPET_DIR/logs/apt.log 2>&1
+
+if dpkg -l puppetmaster-passenger > /dev/null 2>&1 ; then
+	echo "looks like you already have puppet installed"
+	read -p "would you like to reinstall? yes/(no)"
+
+	if [ "$REPLY" == "yes" ]; then
+		apt-get -yy purge $(ls $__BASE__/puppet.wrenchies.net/packages/ubuntu/10.04/bootstrap/*.deb | perl -nle 'print $1 if m#/([^/]+).deb#')
+	fi
+fi
+
+dpkg -l puppetmaster-passenger > /dev/null 2>&1
+ret=$?
+
+if [ "$ret" -ne 0 ]; then
+	echo "installing puppet logs: $PUPPET_DIR/logs/apt.log"
+	dpkg -i $__BASE__/puppet.wrenchies.net/packages/ubuntu/10.04/bootstrap/*.deb >> $PUPPET_DIR/logs/apt.log 2>&1
+
+	apt-get -yy -f install >> $PUPPET_DIR/logs/apt.log 2>&1
+fi
 
 if [ "$DELETED" == "TRUE" ]; then
 
@@ -57,7 +73,6 @@ chmod -R 750 "$PUPPET_DIR"
 (
 	puppet master \
 		--verbose \
-		--debug \
 		--no-daemonize \
 		--color=false \
 		--masterport=8880 \
@@ -76,12 +91,15 @@ chmod -R 750 "$PUPPET_DIR"
 MASTER_PID="$!"
 sleep 5
 
+[ ! -e "/proc/$MASTER_PID" ] && { echo "puppetmaster failed to launch (a stale one running?)"; exit 1; }
+
 echo "Puppet master launched $MASTER_PID with log $PUPPET_DIR/logs/forkedmaster.log"
 
 i=0
 
 while [ "$i" -lt 5 ]; do
 	echo "Puppet agent running with log $PUPPET_DIR/logs/forkedagent.log"
+	set -x
 	puppet agent \
 		--test \
 		--server=localhost \
@@ -91,8 +109,9 @@ while [ "$i" -lt 5 ]; do
 		--confdir="$PUPPET_DIR/conf" \
 		--config="/dev/null" \
 		--detailed-exitcodes >> $PUPPET_DIR/logs/forkedagent.log 2>&1
-
 	ret=$?
+	set +x
+
 	echo "--------------------------" >> $PUPPET_DIR/logs/forkedagent.log
 	echo "--------------------------" >> $PUPPET_DIR/logs/forkedagent.log
 	echo "--------------------------" >> $PUPPET_DIR/logs/forkedagent.log
@@ -124,6 +143,8 @@ if [ "$ret" -eq 0 -o "$ret" -eq 2 ]; then
 else
 	echo "agent did not run fine.  sorry but i'm no help now"
 fi
+
+pause
 
 echo -n "killing puppetmaster"
 while [ -e "/proc/$MASTER_PID" ]; do
