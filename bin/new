@@ -51,29 +51,29 @@ function role {
 	if [ "$1" == "puppetmaster" ]; then
 		cat > $(getEnvManifestPath $env)/roles/$1.pp <<-NEW
 			class $passedEnv::role::$1 {
-			 	class {
-			 		"config":
-			 			attributes => {
-			 				role => "$1"
-			 			}
-			 	}
+				class {
+					"config":
+						attributes => {
+							role => "$1"
+						}
+				}
 
-			 	include $passedEnv::base
-			 	include framework::apache
-			 	include framework::mysql
-			 	include framework::puppetmaster
+				include $passedEnv::base
+				include framework::apache
+				include framework::mysql
+				include framework::puppetmaster
 			}
 		NEW
 	else
 		cat > $(getEnvManifestPath $env)/roles/$1.pp <<-NEW
 			class $passedEnv::role::$1 {
-			 	class {
-			 		"config":
-			 			attributes => {
-			 				role => "$1"
-			 			}
-			 	}
-			 	include $passedEvn::base
+				class {
+					"config":
+						attributes => {
+							role => "$1"
+						}
+				}
+				include $passedEvn::base
 
 			}
 		NEW
@@ -93,11 +93,11 @@ function define {
 	[ -e "$(getEnvManifestPath $env)/defines/$1.pp" ] && { echo "define $1 already exists in $env"; exit 1; }
 	cat > $(getEnvManifestPath $env)/defines/$1.pp <<-NEW
 		define $prefix$1 (\$ensure="present") {
-		 	if \$ensure=="present" {
+			if \$ensure=="present" {
 
-		 	}else{
+			}else{
 
-		 	}
+			}
 		}
 	NEW
 

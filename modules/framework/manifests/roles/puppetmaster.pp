@@ -2,7 +2,7 @@ class framework::role::puppetmaster {
 	class{
 		"config":
 			attributes => {
-				role => "pipe",
+				role => "puppetmaster",
 			}
 	}
 	

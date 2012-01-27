@@ -1,3 +1,3 @@
 node default {
-	include framework::base
+	include production::role::base
 }
