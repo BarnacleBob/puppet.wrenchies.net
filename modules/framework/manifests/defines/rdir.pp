@@ -5,7 +5,7 @@ define rDir ($ensure="present",$backup=client,$owner=root,$group=root,$ignore=".
 		file{
 			$name:
 				source=>[
-					"puppet:///modules/main/host/$domain/$hostname/$name",
+					"puppet:///modules/main/host/${::domain}/${::hostname}/$name",
 					"puppet:///modules/main/role/$role/$name",
 					"puppet:///modules/main/all/$name",
 					"puppet:///modules/shared/role/$role/$name",

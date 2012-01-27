@@ -13,7 +13,7 @@ define tFile ($ensure="present",$backup=client,$owner=root,$group=root,$mode=644
 				content=>
 					inline_template(
 						file(
-							"$prefix/environments/$realEnvironment/modules/main/files/host/$domain/$hostname/$name",
+							"$prefix/environments/$realEnvironment/modules/main/files/host/${::domain}/${::hostname}/$name",
 							"$prefix/environments/$realEnvironment/modules/main/files/role/$role/$name",
 							"$prefix/environments/$realEnvironment/modules/main/files/all/$name",
 							"$prefix/modules/shared/files/role/$role/$name",
