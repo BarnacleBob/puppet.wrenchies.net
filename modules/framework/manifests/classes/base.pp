@@ -1,4 +1,5 @@
 class framework::base {
+	err("framework class base is being evaled")
 	dir{"/data": }
 	dir{"/data/logs": }
 	dir{"/data/config": }
