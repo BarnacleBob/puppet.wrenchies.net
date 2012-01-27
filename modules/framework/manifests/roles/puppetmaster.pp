@@ -1,9 +1,14 @@
 class framework::role::puppetmaster {
- 	$role="puppetmaster"
- 	
- 	include framework::base
+	class{
+		"config":
+			attributes => {
+				role => "pipe",
+			}
+	}
+	
+	include framework::base
 	include framework::apache
 	include framework::mysql
- 	include framework::puppetmaster
+	include framework::puppetmaster
 
 }

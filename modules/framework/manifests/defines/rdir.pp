@@ -1,4 +1,6 @@
 define rDir ($ensure="present",$backup=client,$owner=root,$group=root,$ignore=".svn",$links="manage",$purge=false,$replace=true,$sourceselect=first,$force=false,$mode="644") {
+	$role = $config::attributes[role]
+	
 	if $ensure=="present" {
 		file{
 			$name:

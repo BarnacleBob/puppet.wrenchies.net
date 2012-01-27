@@ -51,9 +51,14 @@ function role {
 	if [ "$1" == "puppetmaster" ]; then
 		cat > $(getEnvManifestPath $env)/roles/$1.pp <<-NEW
 			class $passedEnv::role::$1 {
-			 	\$role="$1"
+			 	class {
+			 		"config":
+			 			attributes => {
+			 				role => "$1"
+			 			}
+			 	}
 
-			 	include framework::base
+			 	include $passedEnv::base
 			 	include framework::apache
 			 	include framework::mysql
 			 	include framework::puppetmaster
@@ -62,7 +67,13 @@ function role {
 	else
 		cat > $(getEnvManifestPath $env)/roles/$1.pp <<-NEW
 			class $passedEnv::role::$1 {
-			 	\$role="$1"
+			 	class {
+			 		"config":
+			 			attributes => {
+			 				role => "$1"
+			 			}
+			 	}
+			 	include $passedEvn::base
 
 			}
 		NEW
@@ -160,6 +171,12 @@ function environment {
 		import "./classes/*.pp"
 		import "./defines/*.pp"
 	INIT
+	cat > $__BASE__/environments/$1/modules/main/manifests/classes/base.pp <<-BASE
+		class $1::base {
+			include framework::base
+
+		}
+	BASE
 
 	#we do this trick to add the empty directories to git to help users understand paths
 	find $__BASE__/environments/$1 -type d -empty -print0 | xargs -0 -I{} touch '{}'/.gitignore

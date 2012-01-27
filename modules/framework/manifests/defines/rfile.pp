@@ -1,4 +1,5 @@
 define rFile ($ensure="present",$backup=client,$owner=root,$group=root,$mode=644,$links="manage",$replace="true") {
+	$role = $config::attributes[role]
 	if $ensure=="present" {
 		file{
 			"$name":
