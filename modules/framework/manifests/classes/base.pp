@@ -14,5 +14,3 @@ class framework::base {
 	include framework::sudo
 	include framework::sshd
 }
-
-Class["config"] -> Class["framework::base"]
