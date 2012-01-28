@@ -1,6 +1,3 @@
-$prefix=inline_template('<%= scope.lookupvar("settings::manifest").sub(/\/puppet.wrenchies.net\/.*$/, "") %>')
-$realEnvironment=$environment
-
 import "framework"
 import "main"
 

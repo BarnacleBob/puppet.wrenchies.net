@@ -4,7 +4,7 @@ define tFile ($ensure="present",$backup=client,$owner=root,$group=root,$mode=644
 	err("manifest path is ${settings::manifest}")
 	$envPrefix=inline_template('<%= scope.lookupvar("settings::manifest").sub(/\/site.pp$/, "") %>')
 	err("tfile envPrefix is ${envPrefix}")
-	$prefix=inline_template('<%= envPrefix.sub(/\/(puppet.wrenchies.net\/)?environments.*$/, "") %>')
+	$prefix=inline_template('<%= envPrefix.sub(/\/(puppet.wrenchies.net\/)?environments\/.*$/, "") %>')
 	err("tfile prefix is ${prefix}")
 	if $ensure=="present" {
 		file{
