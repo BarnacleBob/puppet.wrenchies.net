@@ -86,6 +86,7 @@ class framework::puppetmaster {
 	apache::module{"ssl": }
 	
 	#note we need to graceful apache when the puppet.conf file changes to pick it up right away
+	#FIXME: this has been observed to not work
 	TFile["/etc/puppet/puppet.conf"] ~> Service[$framework::apache::service]
 }
 
