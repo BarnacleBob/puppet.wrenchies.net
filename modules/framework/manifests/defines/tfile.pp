@@ -1,7 +1,10 @@
 define tFile ($ensure="present",$backup=client,$owner=root,$group=root,$mode=644,$links="manage",$replace="true") {
 	$role = $config::attributes[role]
+	
+	framework::debug{"manifest path is ${settings::manifest}": }
+	$prefix=inline_template('<%= scope.lookupvar("settings::manifest").sub(/\/puppet.wrenchies.net\/.*$/, "") %>')
+	framework::debug{"tfile prefix is ${prefix}": }
 	if $ensure=="present" {
-		err("called tFile($name)")
 		file{
 			$name:
 				mode=>$mode,
