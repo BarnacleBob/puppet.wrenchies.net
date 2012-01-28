@@ -2,7 +2,8 @@ class production::role::base {
 	class {
 		"config":
 			attributes => {
-				role => "base"
+				role => "base",
+				debug => "true"
 			}
 	}
 
