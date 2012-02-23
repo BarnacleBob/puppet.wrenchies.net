@@ -38,6 +38,7 @@ class framework::puppetmaster {
 			listen => "*:8140",
 			owner => "puppet",
 			group => "puppet",
+			puppetPushed => "false",
 			topDirectives => [
 				"PassengerHighPerformance on",
 				"PassengerMaxPoolSize 20",
@@ -89,4 +90,3 @@ class framework::puppetmaster {
 	#FIXME: this has been observed to not work
 	TFile["/etc/puppet/puppet.conf"] ~> Service[$framework::apache::service]
 }
-

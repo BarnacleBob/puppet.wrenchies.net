@@ -1,4 +1,8 @@
 class framework::apache($std_modules="true") {
+	#note this is a helper for use outside of framework.  if it changes framework needs to be changed in several places
+	$defaultDocumentRoot = "/data/sites"
+	$defaultConfigPath = "/data/config/apache2"
+
 	case $lsbdistid {
 		"Ubuntu": {
 			$package="apache2"
@@ -144,7 +148,7 @@ define apache::listen ($vhosts="false"){
 }
 
 define apache::vhost (
-		$documentRoot,
+		$documentRoot = "/data/sites/$name",
 		$aliases = "",
 		$owner = "root",
 		$group = "root",
@@ -152,11 +156,12 @@ define apache::vhost (
 		$template = "framework/apacheVhost",
 		$listen = "*:80",
 		$defaultVhost = "false",
-		$puppetPushed = "false",
+		$puppetPushed = "true",
 		$sourceselect = "all",
 		$topDirectives = "",
 		$vhostDirectives = "",
-		$directoryDirectives = ""){
+		$directoryDirectives = ""
+	){
 
 	if $defaultVhost=="true" {
 		$vhostprefix = "000-default-"

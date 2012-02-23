@@ -5,7 +5,6 @@ class framework::base {
 	dir{"/data/config": }
 	rDir{
 		"/data/bin":
-			sourceselect=>all,
 			purge=>true,
 			force=>true,
 	}
