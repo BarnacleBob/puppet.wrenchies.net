@@ -10,8 +10,8 @@ define rDir (
 		$sourceselect = all,
 		$force = false,
 		$mode = "644",
-		$source = "",
-	) {
+		$source = ""
+	){
 	$role = $config::attributes[role]
 	
 	if $source == "" {
