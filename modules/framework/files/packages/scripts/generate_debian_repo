@@ -1,0 +1,25 @@
+#!/bin/bash
+
+repo_root=$1
+
+[ -z "$repo_root" ] && { echo "must pass the root of where the repo will be created.  this would contain a sub directory of packages"; exit 1; }
+
+cd "$repo_root"
+
+apt-ftparchive generate apt-ftparchive.conf
+
+apt-ftparchive -c apt-release.conf release dists/$(basename "$repo_root") > dists/$(basename "$repo_root")/Release
+
+[ -e "dists/$(basename "$repo_root")/Release.gpg" ] && rm -f "dists/$(basename "$repo_root")/Release.gpg"
+
+gpg --local-user repo_signer --detach-sign --armor --output Release.gpg Release
+
+exit 0
+
+#cd /nail/sys/mirror/slide/${RELEASE}
+#apt-ftparchive generate apt-ftparchive.conf
+#apt-ftparchive -c apt-release.conf release dists/${RELEASE} > dists/${RELEASE}/Release
+
+#cd dists/${RELEASE}
+#rm -f Release.gpg
+#gpg -bao Release.gpg Release
