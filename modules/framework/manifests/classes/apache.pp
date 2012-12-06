@@ -1,3 +1,4 @@
+#class framework::apache {
 class framework::apache($std_modules="true") {
 	#note this is a helper for use outside of framework.  if it changes framework needs to be changed in several places
 	$defaultDocumentRoot = "/data/sites"

@@ -74,7 +74,7 @@ function classes {
 	env=$(getEnv) || usage
 	echo "classes available in $env"
 	echo "-------------------------"
-	egrep -irho --exclude="*.svn*" "class[[:space:]]+$env::[^[:space:]]+[[:space:]]*(\{|inherits)" $(getEnvManifestPath)/classes | perl -ple "s#class\s*$env::(\S*)\s*(\{|inherits)#\1#ig"
+	egrep -irho --exclude="*.svn*" "class[[:space:]]+$env::[^[:space:]]+[[:space:]]*(\(|\{|inherits)" $(getEnvManifestPath)/classes | perl -ple "s#class\s*$env::(\S*)\s*(\{|inherits)#\1#ig"
 }
 
 function class {
@@ -82,14 +82,14 @@ function class {
 
 	[ -z "$1" ] && usage
 
-	egrep -irl --exclude="*.svn*" "class[[:space:]]+$env::$1[[:space:]]*(\{|inherits)" $(getEnvManifestPath)/classes || { echo "none found"; exit 1; }
+	egrep -irl --exclude="*.svn*" "class[[:space:]]+$env::$1[[:space:]]*(\(|\{|inherits)" $(getEnvManifestPath)/classes || { echo "none found"; exit 1; }
 }
 
 function roles {
 	env=$(getEnv) || usage
 	echo "roles available in $env"
 	echo "-------------------------"
-	egrep -irho --exclude="*.svn*" "class[[:space:]]+$env::role::[^[:space:]]+[[:space:]]*(\{|inherits)" $(getEnvManifestPath)/roles | perl -ple "s#class\s*$env::role::(\S*)\s*(\{|inherits)#\1#ig"
+	egrep -irho --exclude="*.svn*" "class[[:space:]]+$env::role::[^[:space:]]+[[:space:]]*(\(|\{|inherits)" $(getEnvManifestPath)/roles | perl -ple "s#class\s*$env::role::(\S*)\s*(\{|inherits)#\1#ig"
 }
 
 function role {
@@ -97,7 +97,7 @@ function role {
 
 	[ -z "$1" ] && usage
 
-	egrep -irl --exclude="*.svn*" "class[[:space:]]+$env::role::$1[[:space:]]*(\{|inherits)" $(getEnvManifestPath)/roles || { echo "none found"; exit 1; }
+	egrep -irl --exclude="*.svn*" "class[[:space:]]+$env::role::$1[[:space:]]*(\(|\{|inherits)" $(getEnvManifestPath)/roles || { echo "none found"; exit 1; }
 }
 
 function defaults {

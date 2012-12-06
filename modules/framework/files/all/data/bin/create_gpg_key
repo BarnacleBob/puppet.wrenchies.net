@@ -1,0 +1,34 @@
+#!/bin/bash
+
+set -x
+
+name="$1"
+
+shift
+
+if [[ -e /tmp/puppet.rngd.pid ]]; then
+	pid=$(cat /tmp/puppet.rngd.pid)
+	[[ -e "/proc/$pid" ]] && kill "$pid" &> /dev/null
+	rm /tmp/puppet.rngd.pid &>/dev/null
+fi
+
+/usr/sbin/rngd -r /dev/urandom -p /tmp/puppet.rngd.pid || { echo "could not launch rngd"; exit 1; }
+
+gpg $@ --batch --gen-key << ENDCREATEKEY
+	Key-Type: DSA
+	Key-Length: 1024
+	Subkey-Type: ELG-E
+	Subkey-Length: 1024
+	Name-Real: ${name}
+	Name-Comment: Puppet key ${name}
+	Name-Email: ${name}@gpg.$HOSTNAME
+	Expire-Date: 0
+	%commit
+ENDCREATEKEY
+
+ret=$?
+[[ "$ret" != "0" ]] && echo "could not create key"
+
+kill $(cat /tmp/puppet.rngd.pid) || { echo "could not kill rngd"; exit 1; }
+
+[[ "$ret" != "0" ]] && exit $ret
