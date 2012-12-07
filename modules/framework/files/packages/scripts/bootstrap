@@ -1,0 +1,17 @@
+#!/bin/bash 
+
+set -e
+
+source /etc/lsb-release
+
+wget http://packages.puppet.wrenchies.net/${DISTRIB_ID,,}/${DISTRIB_RELEASE}/signingkey.pub -O "/usr/share/keyrings/packages.puppet.wrenchies.net.public.key"
+
+/usr/bin/apt-key add /usr/share/keyrings/packages.puppet.wrenchies.net.public.key
+
+wget http://packages.puppet.wrenchies.net/${DISTRIB_ID,,}/${DISTRIB_RELEASE}/sources.list -O "/etc/apt/sources.list"
+
+/usr/bin/apt-get update
+
+/usr/bin/apt-get -q -yy install puppet
+
+puppetd --server puppet.wrenchies.net --environment wrenchies

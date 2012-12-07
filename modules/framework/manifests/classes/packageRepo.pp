@@ -10,6 +10,10 @@ class framework::packageRepos($ubuntu=True) {
 	apache::vhost {
 		$repoDomain:
 			puppetPushed => "false",
+			directoryDirectives => [
+				"AllowOverride Indexes",
+				"Options Indexes FollowSymLinks",
+			],
 	}
 	
 	dir{"${documentRoot}/ubuntu": }
@@ -37,14 +41,17 @@ define framework::packageRepo::debianStyle($distro){
 	$releaseVersion=$name
 	
 	dir{"${framework::packageRepos::documentRoot}/${distro}/$name": }
+	dir{"${framework::packageRepos::documentRoot}/${distro}/$name/.cache": }
 	dir{"${framework::packageRepos::documentRoot}/${distro}/$name/pool": }
 	dir{"${framework::packageRepos::documentRoot}/${distro}/$name/dists": }
 	dir{"${framework::packageRepos::documentRoot}/${distro}/$name/dists/$name": }
+	dir{"${framework::packageRepos::documentRoot}/${distro}/$name/dists/$name/main": }
+	dir{"${framework::packageRepos::documentRoot}/${distro}/$name/dists/$name/main/binary-amd64": }
 	
 	rDir{
 		"${framework::packageRepos::documentRoot}/${distro}/$name/pool/main":
 			source => regsubst($framework::packageRepos::sourceRoot,'$',"/${distro}/$name"),
-			notify => Exec["$distro $name generate apt-ftparchive.conf"]
+			notify => Exec["$distro $name generate ftp-archive"]
 	}
 
 	gpg::export_key{
@@ -52,25 +59,46 @@ define framework::packageRepo::debianStyle($distro){
 			destination => "${framework::packageRepos::documentRoot}/${distro}/$name/signingkey.pub"
 	}
 	
+	file{
+		"${framework::packageRepos::documentRoot}/${distro}/$name/apt-ftparchive.conf":
+			content => template("framework/apt/apt-ftparchive.conf")
+	}
+
+	file{
+		"${framework::packageRepos::documentRoot}/${distro}/$name/apt-release.conf":
+			content => template("framework/apt/apt-release.conf")
+	}
+
+	file{
+		"${framework::packageRepos::documentRoot}/${distro}/${name}/sources.list":
+			content => template("framework/apt/sources.list-${distro}-${name}")
+	}
+	
 	exec{
-		"$distro $name generate apt-ftparchive.conf": 
+		"$distro $name generate ftp-archive": 
 			cwd => "${framework::packageRepos::documentRoot}/${distro}/$name",
 			command => "/usr/bin/apt-ftparchive generate apt-ftparchive.conf",
-			refreshonly => true,
+			creates => "${framework::packageRepos::documentRoot}/${distro}/$name/dists/$name/Contents-amd64",
+			logoutput => "true",
 			notify => Exec["$distro $name generate Release file"],
+			subscribe => File["${framework::packageRepos::documentRoot}/${distro}/$name/apt-ftparchive.conf"],
 	}
 	exec{
 		"$distro $name generate Release file": 
 			cwd => "${framework::packageRepos::documentRoot}/${distro}/$name",
 			command => "/usr/bin/apt-ftparchive -c apt-release.conf release dists/${name} > dists/${name}/Release",
-			refreshonly => true,
+			creates => "${framework::packageRepos::documentRoot}/${distro}/$name/dists/${name}/Release",
 			notify => Gpg::Detached_sign_file["${framework::packageRepos::documentRoot}/${distro}/$name/dists/${name}/Release"],
+			require => Exec["$distro $name generate ftp-archive"],
+			logoutput => "true",
+			subscribe => File["${framework::packageRepos::documentRoot}/${distro}/$name/apt-release.conf"],
 	}
 	
 	gpg::detached_sign_file{
 		"${framework::packageRepos::documentRoot}/${distro}/$name/dists/${name}/Release":
 			key => "puppetPackageRepos",
 			destination => "${framework::packageRepos::documentRoot}/${distro}/$name/dists/${name}/Release.gpg",
+			require => Exec["$distro $name generate Release file"],
 	}
 	
 }

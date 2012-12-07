@@ -2,7 +2,7 @@
 class framework::apache($std_modules="true") {
 	#note this is a helper for use outside of framework.  if it changes framework needs to be changed in several places
 	$defaultDocumentRoot = "/data/sites"
-	$defaultConfigPath = "/data/config/apache2"
+	$defaultConfigPath = "/data/config/apache"
 
 	case $lsbdistid {
 		"Ubuntu": {
@@ -14,6 +14,7 @@ class framework::apache($std_modules="true") {
 			$documentroot="/var/www"
 			$serverroot="/etc/apache2"
 			$pidfile="/var/run/apache2.pid"
+			$iconPath="/usr/share/apache2/icons/"	# Trailing / is important
 		}
 		"CentOs": {
 			$package="httpd"
@@ -24,6 +25,7 @@ class framework::apache($std_modules="true") {
 			$documentroot="/var/www/html"
 			$serverroot="/etc/httpd"
 			$pidfile="run/httpd.pid"
+			$iconPath="/var/www/icons/"		# Trailing / is important
 		}
 	}
 	
@@ -58,7 +60,7 @@ class framework::apache($std_modules="true") {
 	dir{"/data/logs/vhosts": }
 	dir{"/data/logs/httpd": owner=>$user, group=>$group}
 	
-	tFile{"/data/config/apache/httpd.conf": }
+	tFile{"/data/config/apache/httpd.conf": notify=>Service["apache"]}
 }
 
 class apache::health::site {

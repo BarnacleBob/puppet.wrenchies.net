@@ -29,6 +29,7 @@ ENDCREATEKEY
 ret=$?
 [[ "$ret" != "0" ]] && echo "could not create key"
 
-kill $(cat /tmp/puppet.rngd.pid) || { echo "could not kill rngd"; exit 1; }
+kill $(cat /tmp/puppet.rngd.pid) && rm /tmp/puppet.rngd.pid || { echo "could not kill rngd"; exit 1; }
 
 [[ "$ret" != "0" ]] && exit $ret
+exit 0

@@ -9,7 +9,6 @@ define rDir (
 		$replace = true,
 		$sourceselect = all,
 		$force = false,
-		$mode = "644",
 		$source = ""
 	){
 	$role = $config::attributes[role]
@@ -42,7 +41,6 @@ define rDir (
 				sourceselect => $sourceselect,
 				recurse => true,
 				force => $force,
-				mode => $mode,
 		}
 	}else{
 		file{

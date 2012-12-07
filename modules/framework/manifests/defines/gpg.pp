@@ -7,8 +7,8 @@ define gpg::key ($ensure="present") {
 	if $ensure=="present" {
 		exec{
 			"build gpg key $name":
-				command => "/data/bin/create_gpg_key '{$name}' ${framework::gpg::default_options}",
-				logoutput => "true",
+				command => "/data/bin/create_gpg_key '$name' ${framework::gpg::default_options}",
+				logoutput => "on_failure",
 				unless => "/usr/bin/gpg ${framework::gpg::default_options} --list-secret-keys '$name'",
 				require => [
 					RDir["/data/bin"],
@@ -32,6 +32,7 @@ define gpg::export_key($ensure="present", $destination){
 				subscribe => Exec["build gpg key $name"],
 				refreshonly => true,
 				require => Class["framework::gpg"],
+				logoutput => "on_failure",
 		}
 	}else{
 		file{$destination: ensure => absent}
@@ -46,6 +47,7 @@ define gpg::detached_sign_file($ensure="present", $key, $destination){
 				subscribe => Exec["build gpg key $key"],
 				refreshonly => true,
 				require => Class["framework::gpg"],
+				logoutput => "on_failure",
 		}
 	}else{
 		file{$destination: ensure => absent}

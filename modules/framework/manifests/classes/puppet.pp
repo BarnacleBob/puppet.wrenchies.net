@@ -2,7 +2,6 @@ class framework::puppet {
 	package{"facter": ensure=>latest}
 	package{"puppet": ensure=>latest}
 
-	rFile{"/data/bin/puppetctl": mode=>755}
 	tFile{"/etc/puppet/puppet.conf": require=>Package["puppet"]}
 
 	service{"puppet": enable=>false, require=>Package["puppet"]}
