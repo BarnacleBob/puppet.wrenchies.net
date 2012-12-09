@@ -14,4 +14,5 @@ class framework::base {
 	include framework::puppet
 	include framework::sudo
 	include framework::sshd
+	include framework::apt
 }
