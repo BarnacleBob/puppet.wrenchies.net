@@ -173,7 +173,7 @@ define apache::vhost (
 	}
 	
 	if $puppetPushed == "true" {
-		rDir{"$documentRoot": owner=>$owner,group=>$group,mode=>$mode,sourceselect=>$sourceselect}
+		rDir{"$documentRoot": owner=>$owner,group=>$group,sourceselect=>$sourceselect}
 	}else{
 		dir{"$documentRoot": owner=>$owner,group=>$group,mode=>$mode}
 	}
