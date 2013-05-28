@@ -1,4 +1,4 @@
-define tFile ($ensure="present",$backup=client,$owner=root,$group=root,$mode=644,$links="manage",$replace="true") {
+define tFile ($ensure="present",$backup=client,$owner=root,$group=root,$mode=644,$links="manage",$replace="true",$destination="") {
 	$role = $config::attributes[role]
 	
 	err("manifest path is ${settings::manifest}")
@@ -6,9 +6,16 @@ define tFile ($ensure="present",$backup=client,$owner=root,$group=root,$mode=644
 	err("tfile envPrefix is ${envPrefix}")
 	$prefix=inline_template('<%= envPrefix.sub(/\/(puppet.wrenchies.net\/)?environments\/.*$/, "") %>')
 	err("tfile prefix is ${prefix}")
+	
+	if $destination == "" {
+		$useDestination = $name
+	}else{
+		$useDestination = $destination
+	}
+
 	if $ensure=="present" {
 		file{
-			$name:
+			$useDestination:
 				mode=>$mode,
 				owner=>$owner,
 				group=>$group,

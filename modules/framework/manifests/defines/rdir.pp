@@ -9,9 +9,16 @@ define rDir (
 		$replace = true,
 		$sourceselect = all,
 		$force = false,
-		$source = ""
+		$source = "",
+		$destination = ""
 	){
 	$role = $config::attributes[role]
+	
+	if $destination == "" {
+		$useDestination = $name
+	}else{
+		$useDestination = $destination
+	}
 	
 	if $source == "" {
 		$useSource = [
@@ -29,7 +36,7 @@ define rDir (
 	
 	if $ensure=="present" {
 		file{
-			$name:
+			$useDestination:
 				source => $useSource,
 				backup => $backup,
 				owner => $owner,

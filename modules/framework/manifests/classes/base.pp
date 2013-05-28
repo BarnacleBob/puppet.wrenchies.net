@@ -1,5 +1,6 @@
 class framework::base {
 	err("framework class base is being evaled")
+	filebucket{"client": path=>"${settings::vardir}/clientbucket" }
 	dir{"/data": }
 	dir{"/data/home": }
 	dir{"/data/logs": }

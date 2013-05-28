@@ -1,8 +1,15 @@
-define rFile ($ensure="present",$backup=client,$owner=root,$group=root,$mode=644,$links="manage",$replace="true") {
+define rFile ($ensure="present",$backup=client,$owner=root,$group=root,$mode=644,$links="manage",$replace="true",$destination="") {
 	$role = $config::attributes[role]
+
+	if $destination == "" {
+		$useDestination = $name
+	}else{
+		$useDestination = $destination
+	}
+
 	if $ensure=="present" {
 		file{
-			"$name":
+			"$useDestination":
 				source=>[
 					"puppet:///modules/main/host/${::domain}/${::hostname}/$name",
 					"puppet:///modules/main/role/$role/$name",
