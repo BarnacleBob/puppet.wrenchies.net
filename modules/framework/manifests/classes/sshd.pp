@@ -18,6 +18,6 @@ class framework::sshd {
 			hasrestart=>true,
 			require=>Package[$package]
 	}
-	
+
 	rFile{"/etc/ssh/sshd_config": notify=>Service[$service],mode=>600}
 }
