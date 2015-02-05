@@ -61,4 +61,4 @@ deb-src http://security.ubuntu.com/ubuntu trusty-security multiverse
 # deb http://extras.ubuntu.com/ubuntu trusty main
 # deb-src http://extras.ubuntu.com/ubuntu trusty main
 
-deb http://packages.puppet.<%= scope.lookupvar("::domain") %>/ubuntu/10.04 10.04 main
+deb http://packages.puppet.<%= scope.lookupvar("::domain") %>/ubuntu/14.04 14.04 main
