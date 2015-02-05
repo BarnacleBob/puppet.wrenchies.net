@@ -141,9 +141,9 @@ define apache::listen ($vhosts="false"){
 			notify=>Exec["apache full restart"],
 			require=>ManagedDir["/data/config/apache"],
 			content=>inline_template('
-				listen <%= name %>
-				<% if vhosts=="true" %>
-				namevirtualhost <%= listen %>
+				listen <%= @name %>
+				<% if @vhosts=="true" %>
+				namevirtualhost <%= @listen %>
 				<% end %><%= "\n" %>'
 			),
 	}

@@ -34,15 +34,15 @@ class framework::puppetmaster {
 	
 	apache::vhost{
 		"puppet":
-			documentRoot => "/etc/puppet/rack/public",
+			documentRoot => "/usr/share/puppet/rack/puppetmasterd/public/",
 			listen => "*:8140",
 			owner => "puppet",
 			group => "puppet",
 			puppetPushed => "false",
 			topDirectives => [
 				"PassengerHighPerformance on",
-				"PassengerMaxPoolSize 20",
-				"PassengerPoolIdleTime 3600",
+				"PassengerMaxPoolSize 12",
+				"PassengerPoolIdleTime 1500",
 				"#PassengerMaxRequests 1000",
 				"PassengerStatThrottleRate 60",
 				"RackAutoDetect Off",
@@ -50,13 +50,16 @@ class framework::puppetmaster {
 			],
 			vhostDirectives => [
 				"SSLEngine on",
-				"SSLProtocol -ALL +SSLv3 +TLSv1",
-				"SSLCipherSuite ALL:!ADH:RC4+RSA:+HIGH:+MEDIUM:-LOW:-SSLv2:-EXP",
+				"SSLProtocol             ALL -SSLv2 -SSLv3",
+				"SSLCipherSuite          EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA384:EECDH+aRSA+SHA256:EECDH:+CAMELLIA256:+AES256:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!IDEA:!ECDSA:kEDH:CAMELLIA256-SHA:AES256-SHA:CAMELLIA128-SHA:AES128-SHA",
+				"SSLHonorCipherOrder     on",
 
 				"SSLCertificateFile /var/lib/puppet/ssl/certs/$::fqdn.pem",
 				"SSLCertificateKeyFile /var/lib/puppet/ssl/private_keys/$::fqdn.pem",
-				"SSLCertificateChainFile /var/lib/puppet/ssl/ca/ca_crt.pem",
-				"SSLCACertificateFile /var/lib/puppet/ssl/ca/ca_crt.pem",
+				"#SSLCertificateChainFile /var/lib/puppet/ssl/ca/ca_crt.pem",
+				"#SSLCACertificateFile /var/lib/puppet/ssl/ca/ca_crt.pem",
+				"SSLCertificateChainFile /var/lib/puppet/ssl/certs/ca.pem",
+				"SSLCACertificateFile /var/lib/puppet/ssl/certs/ca.pem",
 
 				"#see known issue http://reductivelabs.com/trac/puppet/wiki/UsingMongrel",
 				"#SSLCARevocationFile /var/lib/puppet/ssl/ca/ca_crl.pem",
@@ -64,6 +67,11 @@ class framework::puppetmaster {
 				"SSLVerifyClient optional",
 				"SSLVerifyDepth  1",
 				"SSLOptions +StdEnvVars",
+
+				"RequestHeader unset X-Forwarded-For",
+				"RequestHeader set X-SSL-Subject %{SSL_CLIENT_S_DN}e",
+				"RequestHeader set X-Client-DN %{SSL_CLIENT_S_DN}e",
+				"RequestHeader set X-Client-Verify %{SSL_CLIENT_VERIFY}e",
 
 				"RackBaseURI /",
 				"PassengerHighPerformance on",
