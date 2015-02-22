@@ -68,14 +68,31 @@ class apache::health::site {
 }
 
 class apache::modules::standard {
-	apache::module{"alias": }
+	case $operatingsystemrelease {
+		"14.04": {
+			apache::module{"access_compat": }
+			apache::module{"authn_core": }
+			apache::module{"authz_core": }
+			apache::module{"authz_user": }
+			apache::module{"filter": }
+			apache::module{"mpm_event": }
+		}
+		default: {
+			apache::module{"authz_default": }
+			apache::module{"authz_groupfile": }
+			apache::module{"cgi": }
+			apache::module{"proxy": }
+			apache::module{"proxy_balancer": }
+			apache::module{"proxy_http": }
+			apache::module{"rewrite": }
+		}
+	}
+
+	apache::module{"alias":	}
 	apache::module{"auth_basic": }
 	apache::module{"authn_file": }
-	apache::module{"authz_default": }
-	apache::module{"authz_groupfile": }
 	apache::module{"authz_host": }
-	apache::module{"autoindex": }
-	apache::module{"cgi": }
+	apache::module{"autoindex":	}
 	apache::module{
 		"deflate":
 			config=>[
@@ -94,10 +111,6 @@ class apache::modules::standard {
 	apache::module{"headers": }
 	apache::module{"mime": }
 	apache::module{"negotiation": }
-	apache::module{"proxy": }
-	apache::module{"proxy_balancer": }
-	apache::module{"proxy_http": }
-	apache::module{"rewrite": }
 	apache::module{"setenvif": }
 	apache::module{"status": }
 }
